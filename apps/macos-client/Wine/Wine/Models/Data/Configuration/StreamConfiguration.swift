@@ -10,7 +10,7 @@ import ScreenCaptureKit
 
 struct StreamConfiguration {
     
-    var captureMicrophone: Bool = false;
+    var captureMicrophone: Bool = true;
     
     var captureSystemAudio: Bool = true;
     

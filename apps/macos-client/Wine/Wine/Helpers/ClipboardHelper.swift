@@ -7,18 +7,43 @@
 
 import AppKit
 import Foundation
-
+import OSLog
 
 class ClipboardHelper {
-    public static func saveImageToTempFile(_ image: NSImage) throws -> URL {
-        guard let tiffData = image.tiffRepresentation,
-              let bitmap = NSBitmapImageRep(data: tiffData),
-              let pngData = bitmap.representation(using: .png, properties: [:]) else {
-            throw CaptureError.invalidData
+    
+    private static let logger : Logger = Logger(subsystem: AppConstants.reversedDomain, category: "ClipboardHelper")
+    
+    @discardableResult
+    static func copyImageToClipboard(image: NSImage) -> Bool {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        let success = pasteboard.writeObjects([image])
+        if success {
+            logger.info("Copied image to the logger")
+        } else {
+            logger.error("Failed to copy image to the logger")
         }
+        
+        return success
+    }
+    
+    @discardableResult
+    static func copyFileToClipboard(fileURL: URL) -> Bool {
+        guard fileURL.isFileURL, FileManager.default.fileExists(atPath: fileURL.path) else {
+            logger.error("Invalid file URL or file does not exist at path: \(fileURL.path)")
+            return false
+        }
+        
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        let success = pasteboard.writeObjects([fileURL as NSURL])
 
-        let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".png")
-        try pngData.write(to: fileURL)
-        return fileURL
+        if success {
+            logger.info("Successfully copied file at \(fileURL.path) to clipboard.")
+        } else {
+            logger.error("Failed to copy file to clipboard.")
+        }
+        
+        return success
     }
 }

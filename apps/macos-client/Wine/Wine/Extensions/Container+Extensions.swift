@@ -22,12 +22,9 @@ extension Container {
     }
     
     @available(macOS 15.0, *)
-    var scVideoCapture : Factory<SCVideoCapture> {
-        Factory(self){
-            SCVideoCapture(
-                notificationService: self.notificationService.resolve()
-            )
-        }
+    var scVideoCapture: Factory<SCVideoCapture> {
+        self { SCVideoCapture(notificationService: self.notificationService()) }
+            .singleton
     }
     
     var screenshotOrchestra : Factory<AppOrchestra> {

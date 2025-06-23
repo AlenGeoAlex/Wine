@@ -40,6 +40,7 @@ class GlobalCGTap {
 
     private let logger : Logger = Logger(subsystem: AppConstants.reversedDomain, category: "GlobalCGTap")
     private let settingsService : SettingsService;
+    private let appOrchestra : AppOrchestra;
     private var cancellables : Set<AnyCancellable>;
     
     private var eventTap: CFMachPort?
@@ -47,6 +48,7 @@ class GlobalCGTap {
     
     @MainActor
     init(container: Container){
+        self.appOrchestra = container.screenshotOrchestra.resolve();
         self.settingsService = container.settingsService.resolve();
         self.cancellables = [];
         
@@ -88,7 +90,9 @@ class GlobalCGTap {
 
         switch action {
         case .quickSnip:
-            // Your action logic here
+            Task { @MainActor in
+                await appOrchestra.takeSnip()
+            }
             break
         default:
             break

@@ -9,6 +9,7 @@ import Foundation
 import OSLog
 import FactoryKit
 import AppKit
+import ClopSDK
 
 class AppOrchestra : ObservableObject {
     
@@ -25,16 +26,37 @@ class AppOrchestra : ObservableObject {
     func takeSnip() async -> Void {
         do {
             let image = try await self.screenshotCapture.captureImageWithSelection();
-            let url = try image.get();
+            var url = try image.get();
             
             logger.info("File has been saved to \(url)")
-            guard let nsImage = NSImage(contentsOf: url) else {
+            guard let _ = NSImage(contentsOf: url) else {
                 logger.error("Failed to take snip")
                 return;
             }
+  
+            let useClop : Bool = await self.settingsService.appSettings.integrateWithClop;
+            logger.info("Integrate with clop is \(useClop)")
+            if(useClop){
+                if(!AppHelpers.isAppRunning(appName: "Clop")){
+                    logger.warning("Clopping is not running skipping")
+                }
+                
+                let clopAvailable = ClopSDK.shared.waitForClopToBeAvailable(for: 0)
+                if(clopAvailable){
+                    let clopResponse = try ClopSDK.shared.optimise(url: url, aggressive: true)
+                    let clopUrl = URL(string: clopResponse.path);
+                    if(clopUrl == nil){
+                        logger.warning("Failed to optimize image with clop")
+                    }else{
+                        url = clopUrl!
+                        logger.info("Image has been optimized with clop to \(clopResponse.newBytes) from \(clopResponse.oldBytes)")
+                    }
+                }else{
+                    logger.info("Clop is not available...")
+                }
+            }
             
-            let clipboardUrl = try ClipboardHelper.saveImageToTempFile(nsImage)
-            logger.info("URL is \(clipboardUrl)")
+            logger.info("URL is \(url)")
         }catch {
             logger.error("Failed to take snip \(error)")
         }

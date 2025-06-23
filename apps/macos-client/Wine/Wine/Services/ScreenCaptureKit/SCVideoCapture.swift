@@ -15,7 +15,7 @@ import ScreenCaptureKit
 @available(macOS 15.0, *)
 class SCVideoCapture : NSObject, ObservableObject, SCContentSharingPickerObserver {
     
-    var versionId : UUID = UUID();
+    @Published var versionId : UUID = UUID();
     private let logger : Logger = Logger(subsystem: AppConstants.reversedDomain, category: "SCVideCapture")
     private var contentPicker : SCContentSharingPicker?;
     
@@ -43,6 +43,7 @@ class SCVideoCapture : NSObject, ObservableObject, SCContentSharingPickerObserve
         
     }
     
+    @MainActor
     private func startRecording(filter: SCContentFilter){
         if(session != nil){
             session?.updateFilter(filter: filter);
@@ -54,9 +55,12 @@ class SCVideoCapture : NSObject, ObservableObject, SCContentSharingPickerObserve
             session?.start();
             logger.info("Recording has been told to start")
         }
+        self.isRecording = true;
         self.versionId = UUID();
+        logger.info("\(self.versionId)  \(self.isRecording)")
     }
     
+    @MainActor
     func stopRecording(){
         streamConfiguration = nil;
         if(session == nil)
@@ -65,7 +69,10 @@ class SCVideoCapture : NSObject, ObservableObject, SCContentSharingPickerObserve
         }
         
         session?.stop();
+        self.isRecording = false;
         self.versionId = UUID();
+        logger.info("\(self.versionId)")
+
     }
     
     private func setupContentPicker(){
@@ -90,7 +97,9 @@ class SCVideoCapture : NSObject, ObservableObject, SCContentSharingPickerObserve
     
 
     func contentSharingPicker(_ picker: SCContentSharingPicker, didUpdateWith filter: SCContentFilter, for stream: SCStream?){
-        startRecording(filter: filter)
+        Task { @MainActor in
+            startRecording(filter: filter)
+        }
         logger.info("Recording source has been selected!");
     }
     

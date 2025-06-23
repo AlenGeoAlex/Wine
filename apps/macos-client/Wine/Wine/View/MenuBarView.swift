@@ -10,11 +10,12 @@ import Foundation
 import AppKit
 import FactoryKit;
 
-
-struct MenuBarView : Scene {
+@available(macOS 15.0, *)
+struct MenuBarViewOS15 : Scene {
     
     @InjectedObject(\.settingsService) private var settingsService
-    @Injected(\.screenshotOrchestra) private var screenshotOrchestra : AppOrchestra;    
+    @Injected(\.screenshotOrchestra) private var screenshotOrchestra : AppOrchestra;
+    @InjectedObject(\.scVideoCapture) private var scVideoCapture: SCVideoCapture
     @Environment(\.openWindow) var openWindow
     
     var body: some Scene {
@@ -35,16 +36,79 @@ struct MenuBarView : Scene {
                 
                 Button(BindableAction.quickScreenRecord.name){
                     Task {
-                        openWindow(id: AppConstants.WindowConstants.RecorderWindowConstant)
-                        print("Quick Screen Record!")
+                        scVideoCapture.requestRecordingSource(conf: StreamConfiguration())
                     }
                 }.keyboardShortcut(getKeyboardShortcut(for: .quickScreenRecord))
-                    .disabled(!isScreenSharingEnabled)
+                    .id(scVideoCapture.versionId)
+                    .disabled(scVideoCapture.isRecording)
                 
-                Button(BindableAction.screenRecord.name){
-                    print("Screen Record")
-                }.keyboardShortcut(getKeyboardShortcut(for: .screenRecord))
-                    .disabled(!isScreenSharingEnabled);
+                if(scVideoCapture.isRecording){
+                    Button("Stop"){
+                        Task {
+                            if(scVideoCapture.isRecording){
+                                scVideoCapture.stopRecording();
+                            }else{
+                                openWindow(id: AppConstants.WindowConstants.RecorderWindowConstant)
+                            }
+                        }
+                    }.keyboardShortcut(getKeyboardShortcut(for: .screenRecord))
+                }else{
+                    Button(BindableAction.screenRecord.name){
+                        Task {
+                            openWindow(id: AppConstants.WindowConstants.RecorderWindowConstant)
+                        }
+                    }.keyboardShortcut(getKeyboardShortcut(for: .screenRecord))
+                }
+                
+                Divider();
+                
+                SettingsLink {
+                    Text("Settings")
+                }
+                Button("Transfers"){
+                    print("Transfers!")
+                }
+                Button("Quit"){
+                    NSApp.terminate(nil)
+                }
+            }.id("\(settingsService.appSettings.versionId) "+" \(scVideoCapture.versionId)")
+        }
+        
+        Settings{
+            SettingsView()
+        }
+    }
+    
+    private func stopRecording(){
+        self.scVideoCapture.stopRecording();
+    }
+    
+    
+    private func getKeyboardShortcut(for action: BindableAction) -> KeyboardShortcut? {
+        let key = settingsService.appSettings.bindings[action, default: .empty];
+        return key.swiftUIKeyboardShortcut;
+    }
+}
+
+struct MenuBarViewLegacy : Scene {
+    
+    @InjectedObject(\.settingsService) private var settingsService
+    @Injected(\.screenshotOrchestra) private var screenshotOrchestra : AppOrchestra;
+    @Environment(\.openWindow) var openWindow
+    
+    var body: some Scene {
+        MenuBarExtra(AppConstants.appName, systemImage: "rainbow"){
+            Group{
+                Button(BindableAction.quickSnip.name){
+                    Task {
+                        print("Quick Snip!")
+                        await screenshotOrchestra.takeSnip()
+                    }
+                }.keyboardShortcut(getKeyboardShortcut(for: .quickSnip));
+                
+                Button(BindableAction.snip.name){
+                    print("Snip!")
+                }.keyboardShortcut(getKeyboardShortcut(for: .snip));
                 
                 Divider();
                 
@@ -83,14 +147,5 @@ struct MenuBarView : Scene {
         let key = settingsService.appSettings.bindings[action, default: .empty];
         return key.swiftUIKeyboardShortcut;
     }
-    
-    let isScreenSharingEnabled : Bool = {
-        if #available(macOS 15.0, *) {
-            return true
-        }
-        
-        return false;
-    }()
-    
     
 }

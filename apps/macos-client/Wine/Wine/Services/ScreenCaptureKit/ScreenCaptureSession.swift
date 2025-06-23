@@ -158,13 +158,10 @@ class ScreenCaptureSession : NSObject, SCStreamDelegate, SCRecordingOutputDelega
     func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of type: SCStreamOutputType) {
         switch type {
         case .screen:
-            print("Screen")
             break;
         case .audio:
-            print("Audio")
             break;
         case .microphone:
-            print("micro")
             break;
         default :
             break;
