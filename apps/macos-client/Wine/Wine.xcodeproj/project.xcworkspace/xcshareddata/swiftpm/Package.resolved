@@ -1,0 +1,24 @@
+{
+  "originHash" : "a6e4622c1c27b48b553273cd1cb934b2ec570ed1165848904d3eb73881562f86",
+  "pins" : [
+    {
+      "identity" : "clopsdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/FuzzyIdeas/ClopSDK.git",
+      "state" : {
+        "revision" : "ccf4703690952671d5e2140fa029d00d4e81a854",
+        "version" : "1.1.2"
+      }
+    },
+    {
+      "identity" : "factory",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/hmlongco/Factory",
+      "state" : {
+        "revision" : "ccc898f21992ebc130bc04cc197460a5ae230bcf",
+        "version" : "2.5.3"
+      }
+    }
+  ],
+  "version" : 3
+}

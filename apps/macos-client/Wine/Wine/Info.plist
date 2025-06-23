@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Privacy - Accessibility Usage Description</key>
+	<string>This app needs privacy access to access to keystrokes and record or capture screen</string>
+	<key>Privacy - Screen Recording Usage Description</key>
+	<string>This app needs to record the screen to create video recordings</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs to access the microphone to include your voice in screen recordings.</string>
+</dict>
+</plist>
