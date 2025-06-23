@@ -28,10 +28,13 @@ struct S3Settings : Codable, Equatable, Hashable {
     }
     
     var bucketName: String
-    var region: String = "auto"
+    var region: String = "us-east-1"
     var accessKey: String
     var secretKey: String
     var endpoint: String
+    var customDomain : String?
+    var usePathStyle : Bool = false
+    var usePresignedUrl : Bool = false
 }
 
 struct R2Settings : Codable, Equatable, Hashable {

@@ -25,7 +25,7 @@ struct SettingsView: View {
             case .about:
                 AboutWineSettings()
             }
-        }.frame(width: 750, height: 750) 
+        }.frame(width: 800, height: 750) 
     }
 }
 
