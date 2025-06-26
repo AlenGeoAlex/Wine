@@ -9,6 +9,7 @@ export async function up(db: Kysely<any>): Promise<void> {
         .addColumn('created_at', 'timestamptz', (col) => // Use timestamptz for PostgreSQL
             col.defaultTo(sql`now()`).notNull(),
         )
+        .addColumn('disabled', 'boolean', (col) => col.defaultTo(false).notNull())
         .execute()
 
     await db.schema
@@ -20,6 +21,7 @@ export async function up(db: Kysely<any>): Promise<void> {
             col.defaultTo(sql`now()`).notNull(),
         )
         .addColumn('userId', 'varchar(40)', (col) => col.notNull().references('user.id').onUpdate('cascade').onDelete('cascade'))
+        .addColumn('disabled', 'boolean', (col) => col.defaultTo(false).notNull())
         .execute()
 
     await db.schema

@@ -6,9 +6,10 @@ export async function up(db: Kysely<any>): Promise<void> {
         .addColumn('id', 'varchar(40)', (col) => col.primaryKey().notNull())
         .addColumn('email', 'text', (col) => col.notNull().unique())
         .addColumn('name', 'text')
-        .addColumn('created_at', 'text', (col) =>
+        .addColumn('createdAt', 'text', (col) =>
             col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull(),
         )
+        .addColumn('disabled', 'boolean', (col) => col.defaultTo(false).notNull())
         .execute()
 
     await db.schema
@@ -16,10 +17,11 @@ export async function up(db: Kysely<any>): Promise<void> {
         .addColumn('id', 'varchar(40)', (col) => col.primaryKey().notNull())
         .addColumn('token', 'text', (col) => col.notNull().unique())
         .addColumn('expiry', 'text', (col) => col.defaultTo(sql`null`))
-        .addColumn('created_at', 'text', (col) =>
+        .addColumn('createdAt', 'text', (col) =>
             col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull(),
         )
         .addColumn('userId', 'varchar(40)', (col) => col.notNull().references('user.id').onUpdate('cascade').onDelete('cascade'))
+        .addColumn('disabled', 'boolean', (col) => col.defaultTo(false).notNull())
         .execute()
 
     await db.schema
@@ -31,7 +33,7 @@ export async function up(db: Kysely<any>): Promise<void> {
         .addColumn('contentType', 'text', (col) => col.notNull())
         .addColumn('tags', 'text', (col) => col.notNull().defaultTo('[]'))
         .addColumn('size', "decimal", (col) => col.notNull().defaultTo('0'))
-        .addColumn('created_at', 'text', (col) =>
+        .addColumn('createdAt', 'text', (col) =>
             col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull(),
         )
         .execute();

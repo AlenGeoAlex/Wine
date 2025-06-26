@@ -1,13 +1,13 @@
 import {Command, CommandRunner, Option} from "nest-commander";
-import {CreateUserCommand} from "./create";
-import {UpdateUserCommand} from "./update";
-import {DeleteUserCommand} from "./delete";
-import {ListUserCommand} from "./list";
+import {CreateUserCommandCli} from "./create";
+import {UpdateUserCommandCli} from "./update";
+import {DeleteUserCommandCli} from "./delete";
+import {ListUserCommandCli} from "./list";
 
 @Command({
     name: 'user',
     description: 'commands related to user management',
-    subCommands: [ListUserCommand, CreateUserCommand, UpdateUserCommand, DeleteUserCommand],
+    subCommands: [ListUserCommandCli, CreateUserCommandCli, UpdateUserCommandCli, DeleteUserCommandCli],
 })
 export class UserCommand extends CommandRunner {
     run(passedParams: string[], options?: Record<string, any>): Promise<void> {

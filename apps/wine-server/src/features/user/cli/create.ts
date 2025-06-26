@@ -1,33 +1,42 @@
 import {CommandRunner, Option, SubCommand} from "nest-commander";
 import {UserCreateCommandOptions} from "../dto/cli/UserCreateCommandOptions";
 import {UserService} from "../user.service";
+import {
+    CreateUserCommand,
+    CreateUserCommandHandler,
+    CreateUserCommandResponse, CreateUserError
+} from "@features/user/handlers/create-user";
+import {DatabaseService} from "@db/database";
 
 @SubCommand({ name: 'create', arguments: '[email] [name]' })
-export class CreateUserCommand extends CommandRunner {
+export class CreateUserCommandCli extends CommandRunner {
 
     constructor(
-        private readonly userService: UserService
+        private readonly userService: UserService,
+        private readonly databaseService : DatabaseService,
     ) {
         super();
     }
 
     async run(passedParams: string[], options?: Record<string, any>): Promise<void> {
-        if(!options?.email)
-            throw new Error("Email is required");
-
-        try {
-            const id = await this.userService.create({
-                id: '',
-                email: options.email,
-                name: options.name ?? "Unnamed User",
-                createdAt: new Date()
-            });
-
-            console.log(`Created user with id ${id} with {email: ${options.email}, name: ${options.name}}`);
-        }catch (e){
-            console.error(e);
+        if(!options?.email){
+            console.error("Email is required");
+            return;
         }
 
+        const createUserCommandHandler = new CreateUserCommandHandler(
+            this.userService,
+            this.databaseService
+        );
+
+        const creationResponse = await createUserCommandHandler.executeAsync(new CreateUserCommand(options.email, options.name, false));
+        if(creationResponse instanceof CreateUserCommandResponse){
+            console.log(`Created user with id ${creationResponse.id}`);
+        }else{
+            const userError = creationResponse as CreateUserError;
+            console.error(`Failed to create user [statusCode=${userError.code}] due to ${userError.message}`)
+        }
+        
         return Promise.resolve(undefined);
     }
 

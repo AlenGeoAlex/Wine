@@ -6,8 +6,8 @@ import { UserModule } from '@features/user/user.module';
 import {ClsModule} from "nestjs-cls";
 import {TokenModule} from "@features/token/token.module";
 import {FileModule} from "@features/file/file.module";
-import {SharedModule} from "@shared/shared.module";
 import {DIServiceProvider} from "@common/di.service.provider";
+import {SharedModule} from "@shared/shared.module";
 
 @Module({
   imports: [
@@ -26,7 +26,7 @@ import {DIServiceProvider} from "@common/di.service.provider";
       UserModule,
       TokenModule,
       FileModule,
-      SharedModule
+      SharedModule,
   ],
   controllers: [AppController],
   providers: [

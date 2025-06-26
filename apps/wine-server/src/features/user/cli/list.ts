@@ -3,11 +3,12 @@ import {CommandRunner, Option, SubCommand} from "nest-commander";
 import {UserService} from "../user.service";
 import {IsInt, IsOptional, Min} from "class-validator";
 import {Transform} from "class-transformer";
+import {ListUserCommand, ListUserHandler} from "@features/user/handlers/list-user";
 
 @SubCommand({
     name: 'list',
 })
-export class ListUserCommand extends CommandRunner {
+export class ListUserCommandCli extends CommandRunner {
 
     constructor(
         private readonly userService: UserService,
@@ -21,19 +22,13 @@ export class ListUserCommand extends CommandRunner {
         const take = options?.take || 1;
         const search = options?.query || undefined;
 
-        const users = await this.userService.list({
-            pagination: {
-                skip,
-                take
-            },
-            search: {
-                searchTerm: search,
-            }
-        })
+        const handler = new ListUserHandler(this.userService);
 
-        if(users.length > 0) {
-            console.log(`Found ${users.length} users`);
-            console.table(users);
+        const response = await handler.executeAsync(new ListUserCommand(search, skip, take))
+
+        if(response.items.length > 0) {
+            console.log(`Found ${response.items.length} users`);
+            console.table(response.items);
         }else{
             console.warn("No users found...");
         }

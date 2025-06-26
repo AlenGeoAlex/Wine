@@ -27,4 +27,28 @@ export class TokenService {
             expiresAt: deviceToken.expiry,
         };
     }
+
+    public async deleteToken(id: string) : Promise<void> {
+        const db = this.databaseService.getDb();
+        const response = await db.deleteFrom('deviceToken')
+            .where('id', '=', id)
+            .execute()
+    }
+
+    public async deleteTokensOfUser(id: string) : Promise<void> {
+        const db = this.databaseService.getDb();
+        const response = await db.deleteFrom('deviceToken')
+            .where('userId', '=', id)
+            .execute()
+    }
+
+    public async disableTokensOfUser(userId: string) : Promise<void> {
+        const db = this.databaseService.getDb();
+        await db.updateTable('deviceToken')
+            .set({
+                disabled: true
+            })
+            .where('userId', '=', userId)
+            .execute()
+    }
 }

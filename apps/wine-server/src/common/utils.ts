@@ -15,8 +15,14 @@ export interface ICommandResponse{
 
 }
 
+export interface IErrorResponse {
+    message: string
+    code: number
+    meta?: Record<string, string>
+}
 
-export interface ICommandHandler<in T extends ICommandRequest<X>, out X extends ICommandResponse> {
+
+export interface ICommandHandler<in T extends ICommandRequest<X>, out X extends ICommandResponse | IErrorResponse> {
     executeAsync(params: T): Promise<X>
 }
 

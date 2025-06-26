@@ -10,7 +10,7 @@ import {
     ParseJSONResultsPlugin,
     PostgresDialect,
     SqliteDialect,
-    LogLevel,
+    LogLevel, ControlledTransaction,
 } from 'kysely';
 import * as SQLite from 'better-sqlite3';
 import { Pool } from 'pg';
@@ -111,6 +111,17 @@ export class DatabaseService implements OnModuleInit {
             dialect,
             plugins: [new ParseJSONResultsPlugin()],
         });
+    }
+    
+    public async transaction(): Promise<ControlledTransaction<IDatabase>> {
+        return await this.getDb().startTransaction().execute();
+    }
+
+    public parseBoolean(bool : boolean) : boolean | number {
+        if(this.getDatabaseProvider() === DatabaseProvider.SQLITE)
+            return bool ? 1 : 0;
+        else
+            return bool;
     }
 
     private async tryMigrate(): Promise<void> {
