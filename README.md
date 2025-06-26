@@ -1,4 +1,4 @@
-# Wine - Self-Hosted Screenshot Application
+# Wine - Screenshot Utility
 
 ## Overview
 
