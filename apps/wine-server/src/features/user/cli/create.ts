@@ -1,4 +1,4 @@
-import {CommandRunner, SubCommand} from "nest-commander";
+import {CommandRunner, Option, SubCommand} from "nest-commander";
 import {UserCreateCommandOptions} from "../dto/cli/UserCreateCommandOptions";
 import {UserService} from "../user.service";
 
@@ -11,18 +11,15 @@ export class CreateUserCommand extends CommandRunner {
         super();
     }
 
-    async run(passedParams: string[], options?: UserCreateCommandOptions): Promise<void> {
+    async run(passedParams: string[], options?: Record<string, any>): Promise<void> {
         if(!options?.email)
             throw new Error("Email is required");
-
-        if(!options?.name)
-            throw new Error("Name is required");
 
         try {
             const id = await this.userService.create({
                 id: '',
                 email: options.email,
-                name: options.name,
+                name: options.name ?? "Unnamed User",
                 createdAt: new Date()
             });
 
@@ -32,6 +29,22 @@ export class CreateUserCommand extends CommandRunner {
         }
 
         return Promise.resolve(undefined);
+    }
+
+    @Option({
+        flags: '-e, --email <email>',
+        description: 'Email of the user to create',
+    })
+    parseEmail(val: string) : string {
+        return val;
+    }
+
+    @Option({
+        flags: '-n, --name <name>',
+        description: 'Name of the user to create',
+    })
+    parseName(val: string) : string {
+        return val;
     }
 
 }

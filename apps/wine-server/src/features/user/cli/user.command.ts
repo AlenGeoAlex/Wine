@@ -11,7 +11,6 @@ import {ListUserCommand} from "./list";
 })
 export class UserCommand extends CommandRunner {
     run(passedParams: string[], options?: Record<string, any>): Promise<void> {
-        console.log(`[${passedParams}] ${passedParams}`);
         return Promise.resolve(undefined);
     }
 

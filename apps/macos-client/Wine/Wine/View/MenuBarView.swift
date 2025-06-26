@@ -88,6 +88,7 @@ struct MenuBarViewOS15 : Scene {
         let key = settingsService.appSettings.bindings[action, default: .empty];
         return key.swiftUIKeyboardShortcut;
     }
+
 }
 
 struct MenuBarViewLegacy : Scene {

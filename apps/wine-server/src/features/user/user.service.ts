@@ -1,10 +1,10 @@
 import {Inject, Injectable, Logger} from '@nestjs/common';
-import {DB_PROVIDER} from "../../db/database.constants";
 import {Kysely} from "kysely";
 import {IDatabase} from "common-models";
 import {NewUser, User} from "common-models/dist/types/user.types";
-import {IPaginatedQuery, ISearchable} from "../../common/utils";
+import {IPaginatedQuery, ISearchable} from "@common/utils";
 import {ulid} from "ulid";
+import {DatabaseService} from "@db/database";
 
 @Injectable()
 export class UserService {
@@ -12,14 +12,15 @@ export class UserService {
     private readonly logger = new Logger(UserService.name);
 
     constructor(
-        @Inject(DB_PROVIDER) private readonly db: Kysely<IDatabase>
+        private readonly databaseService : DatabaseService,
     ) {
         this.logger.log("UserService constructor called");
     }
 
     public async create(from: NewUser) : Promise<string> {
         const id = ulid()
-        await this.db
+        const db = this.databaseService.getDb();
+        await db
             .insertInto('user')
             .values({
                 id: id,
@@ -36,7 +37,8 @@ export class UserService {
         pagination?: IPaginatedQuery,
         search?: ISearchable,
     }) :  Promise<User[]> {
-        let query = this.db
+        const db = this.databaseService.getDb();
+        let query = db
             .selectFrom('user');
 
         if(options.search?.searchTerm){
@@ -63,7 +65,8 @@ export class UserService {
     }
 
     public async findById(id: string, options: {}) : Promise<User | undefined> {
-        let query = this.db
+        const db = this.databaseService.getDb();
+        let query = db
             .selectFrom('user')
             .where('id', '=', id)
 
@@ -71,7 +74,8 @@ export class UserService {
     }
 
     public async findByEmail(email: string): Promise<User | undefined> {
-        let query = this.db
+        const db = this.databaseService.getDb();
+        let query = db
             .selectFrom('user')
             .where('email', '=', email)
 

@@ -3,6 +3,13 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-    "deleteOutDir": true
+    "deleteOutDir": true,
+    "paths": {
+      "@/*": ["src/*"],
+      "@common/*": ["src/common/*"],
+      "@db/*": ["src/db/*"],
+      "@features/*": ["src/features/*"],
+      "@shared/*" : ["src/shared/*"]
+    }
   }
 }

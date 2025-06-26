@@ -17,10 +17,14 @@ class AppOrchestra : ObservableObject {
     
     private let settingsService : SettingsService;
     private let screenshotCapture : ImageCaptureProtocol;
+    private let clopIntegration : ClopIntegration;
+    private let previewOverlayService: OverlayWindowService;
     
-    init(settingsService: SettingsService, screenshotCapture: ImageCaptureProtocol) {
+    init(settingsService: SettingsService, screenshotCapture: ImageCaptureProtocol, clopIntegration: ClopIntegration, previewOverlayService: OverlayWindowService) {
         self.settingsService = settingsService
         self.screenshotCapture = screenshotCapture
+        self.clopIntegration = clopIntegration
+        self.previewOverlayService = previewOverlayService
     }
     
     func takeSnip() async -> Void {
@@ -34,26 +38,25 @@ class AppOrchestra : ObservableObject {
                 return;
             }
   
-            let useClop : Bool = await self.settingsService.appSettings.integrateWithClop;
-            logger.info("Integrate with clop is \(useClop)")
-            if(useClop){
-                if(!AppHelpers.isAppRunning(appName: "Clop")){
-                    logger.warning("Clopping is not running skipping")
+            let clopUrl = await clopIntegration.run(forContentOf: url)
+            switch clopUrl {
+            case .failure(let error):
+                logger.error("Failed to send to clop \(error)")
+            case .success(let clopResponse):
+                url = clopResponse;
+            }
+            
+            let finalUrl = url;
+            await MainActor.run {
+                guard let imageToShow = NSImage(contentsOf: finalUrl) else {
+                    logger.error("Failed to create NSImage from URL: \(finalUrl)")
+                    return
                 }
                 
-                let clopAvailable = ClopSDK.shared.waitForClopToBeAvailable(for: 0)
-                if(clopAvailable){
-                    let clopResponse = try ClopSDK.shared.optimise(url: url, aggressive: true)
-                    let clopUrl = URL(string: clopResponse.path);
-                    if(clopUrl == nil){
-                        logger.warning("Failed to optimize image with clop")
-                    }else{
-                        url = clopUrl!
-                        logger.info("Image has been optimized with clop to \(clopResponse.newBytes) from \(clopResponse.oldBytes)")
-                    }
-                }else{
-                    logger.info("Clop is not available...")
-                }
+                previewOverlayService.showOverlay(with: CapturedFile(
+                    fileContent: finalUrl, type: .png, captureType: .screenshot
+                ))
+                logger.info("Showing overlay")
             }
             
             logger.info("URL is \(url)")

@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
-import {AppController} from "./features/app/app.controller";
+import {AppController} from "@features/app/app.controller";
 import {ConfigModule} from "@nestjs/config";
-import { DatabaseModule } from './db/database.module';
-import { UserModule } from './features/user/user.module';
+import { DatabaseModule } from '@db/database.module';
+import { UserModule } from '@features/user/user.module';
 import {ClsModule} from "nestjs-cls";
-import {TokenModule} from "./features/token/token.module";
-import {FileModule} from "./features/file/file.module";
-import {SharedModule} from "./shared/shared.module";
+import {TokenModule} from "@features/token/token.module";
+import {FileModule} from "@features/file/file.module";
+import {SharedModule} from "@shared/shared.module";
+import {DIServiceProvider} from "@common/di.service.provider";
 
 @Module({
   imports: [
@@ -29,8 +30,7 @@ import {SharedModule} from "./shared/shared.module";
   ],
   controllers: [AppController],
   providers: [
-
-      //AppService
+      DIServiceProvider
   ],
 })
 export class AppModule {}

@@ -1,6 +1,6 @@
 import {Controller, Logger, Post, Req, Res} from '@nestjs/common';
 import {FileService} from "./file.service";
-import {TusProvider} from "../../shared/tus.provider";
+import {TusProvider} from "@shared/tus.provider";
 import { Request, Response } from 'express';
 
 @Controller('file')

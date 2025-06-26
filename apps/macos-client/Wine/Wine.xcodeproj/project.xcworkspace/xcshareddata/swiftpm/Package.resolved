@@ -1,5 +1,5 @@
 {
-  "originHash" : "a6e4622c1c27b48b553273cd1cb934b2ec570ed1165848904d3eb73881562f86",
+  "originHash" : "9488c4536f43f873cb25e7700535389c78cdf17aa932ce38dbe6d0cf38d02997",
   "pins" : [
     {
       "identity" : "clopsdk",
@@ -17,6 +17,15 @@
       "state" : {
         "revision" : "ccc898f21992ebc130bc04cc197460a5ae230bcf",
         "version" : "2.5.3"
+      }
+    },
+    {
+      "identity" : "tuskit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tus/TUSKit.git",
+      "state" : {
+        "revision" : "55556412c89ab1dc35a84b8ccbc61e339c8b40fc",
+        "version" : "3.5.0"
       }
     }
   ],

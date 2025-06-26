@@ -1,4 +1,4 @@
-import {Kysely, sql} from 'kysely'
+import { Kysely, sql } from 'kysely'
 
 export async function up(db: Kysely<any>): Promise<void> {
     await db.schema
@@ -6,8 +6,8 @@ export async function up(db: Kysely<any>): Promise<void> {
         .addColumn('id', 'varchar(40)', (col) => col.primaryKey().notNull())
         .addColumn('email', 'text', (col) => col.notNull().unique())
         .addColumn('name', 'text')
-        .addColumn('created_at', 'text', (col) =>
-            col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull(),
+        .addColumn('created_at', 'timestamptz', (col) => // Use timestamptz for PostgreSQL
+            col.defaultTo(sql`now()`).notNull(),
         )
         .execute()
 
@@ -15,9 +15,9 @@ export async function up(db: Kysely<any>): Promise<void> {
         .createTable('deviceToken')
         .addColumn('id', 'varchar(40)', (col) => col.primaryKey().notNull())
         .addColumn('token', 'text', (col) => col.notNull().unique())
-        .addColumn('expiry', 'text', (col) => col.defaultTo(sql`null`))
-        .addColumn('created_at', 'text', (col) =>
-            col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull(),
+        .addColumn('expiry', 'timestamptz')
+        .addColumn('created_at', 'timestamptz', (col) =>
+            col.defaultTo(sql`now()`).notNull(),
         )
         .addColumn('userId', 'varchar(40)', (col) => col.notNull().references('user.id').onUpdate('cascade').onDelete('cascade'))
         .execute()
@@ -29,10 +29,10 @@ export async function up(db: Kysely<any>): Promise<void> {
         .addColumn('status', 'text', (col) => col.defaultTo('created').notNull())
         .addColumn('fileName', 'text', (col) => col.notNull())
         .addColumn('contentType', 'text', (col) => col.notNull())
-        .addColumn('tags', 'text', (col) => col.notNull().defaultTo('[]'))
-        .addColumn('size', "decimal", (col) => col.notNull().defaultTo('0'))
-        .addColumn('created_at', 'text', (col) =>
-            col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull(),
+        .addColumn('tags', 'jsonb', (col) => col.notNull().defaultTo('[]'))
+        .addColumn('size', "numeric", (col) => col.notNull().defaultTo('0'))
+        .addColumn('created_at', 'timestamptz', (col) =>
+            col.defaultTo(sql`now()`).notNull(),
         )
         .execute();
 }

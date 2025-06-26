@@ -28,26 +28,33 @@ extension Container {
     }
     
     var screenshotOrchestra : Factory<AppOrchestra> {
-        if #available(macOS 15.0, *) {
-            Factory(self) {
-                AppOrchestra(
-                    settingsService: self.settingsService.resolve(),
-                    screenshotCapture: self.imageCaptureProtocol.resolve(),
-                )
-            }.singleton
-        }else{
-            Factory(self) {
-                AppOrchestra(
-                    settingsService: self.settingsService.resolve(),
-                    screenshotCapture: self.imageCaptureProtocol.resolve(),
-                )
-            }.singleton
-        }
+        Factory(self) {
+            AppOrchestra(
+                settingsService: self.settingsService.resolve(),
+                screenshotCapture: self.imageCaptureProtocol.resolve(),
+                clopIntegration: self.clopIntegration.resolve(),
+                previewOverlayService: self.previewOverlayService.resolve()
+            )
+        }.singleton
     }
     
     var notificationService : Factory<NotificationService> {
         Factory(self) {
             NotificationService()
+        }.singleton
+    }
+    
+    var clopIntegration : Factory<ClopIntegration> {
+        Factory(self) {
+            ClopIntegration(
+                settingsService: self.settingsService.resolve()
+            )
+        }.singleton
+    }
+    
+    var previewOverlayService : Factory<OverlayWindowService> {
+        Factory(self) {
+            OverlayWindowService()
         }.singleton
     }
     

@@ -17,5 +17,12 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@/*": ["src/*"],
+      "@common/*": ["src/common/*"],
+      "@db/*": ["src/db/*"],
+      "@features/*": ["src/features/*"],
+      "@shared/*" : ["src/shared/*"]
+    }
   }
 }

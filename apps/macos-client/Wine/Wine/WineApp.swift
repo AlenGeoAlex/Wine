@@ -11,6 +11,7 @@ import FactoryKit
 
 @main
 struct WineApp: App {
+    @NSApplicationDelegateAdaptor(WineAppDelegate.self) var appDelegate
     
     private let logger = Logger(subsystem: AppConstants.reversedDomain, category: "WineApp");
     private let cgTapListener : GlobalCGTap;
