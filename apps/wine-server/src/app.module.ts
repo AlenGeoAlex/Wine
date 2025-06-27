@@ -8,29 +8,46 @@ import {TokenModule} from "@features/token/token.module";
 import {FileModule} from "@features/file/file.module";
 import {DIServiceProvider} from "@common/di.service.provider";
 import {SharedModule} from "@shared/shared.module";
+import { UploadModule } from '@features/upload/upload.module';
+import {ServeStaticModule} from "@nestjs/serve-static";
+import { join } from 'path';
+import {EventEmitterModule} from "@nestjs/event-emitter";
+import { UserCreationModule } from './features/user-creation/user-creation.module';
+import { UserDeletionModule } from './features/user-deletion/user-deletion.module';
 
 @Module({
-  imports: [
-      ConfigModule.forRoot({
-        isGlobal: true,
-      }),
-      ClsModule.forRoot({
-          middleware: {
-              mount: true,
-              setup: (cls, req) => {
-                  cls.set('apiKey', req.headers["x-api-key"])
-              }
-          }
-      }),
-      DatabaseModule,
-      UserModule,
-      TokenModule,
-      FileModule,
-      SharedModule,
-  ],
-  controllers: [AppController],
-  providers: [
-      DIServiceProvider
-  ],
+    imports: [
+        ConfigModule.forRoot({
+            isGlobal: true,
+        }),
+        ClsModule.forRoot({
+            middleware: {
+                mount: true,
+                setup: (cls, req) => {
+                    cls.set('apiKey', req.headers["x-api-key"])
+                }
+            }
+        }),
+        ServeStaticModule.forRoot({
+            rootPath: join(__dirname, '..', 'static')
+        }),
+        EventEmitterModule.forRoot({
+            global: true,
+            verboseMemoryLeak: true,
+            ignoreErrors: true,
+        }),
+        DatabaseModule,
+        UserModule,
+        TokenModule,
+        FileModule,
+        SharedModule,
+        UploadModule,
+        UserCreationModule,
+        UserDeletionModule,
+    ],
+    controllers: [AppController],
+    providers: [
+        DIServiceProvider
+    ],
 })
 export class AppModule {}

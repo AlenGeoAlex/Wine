@@ -1,12 +1,13 @@
-import {CommandRunner, Option, SubCommand} from "nest-commander";
+import {Command, CommandRunner, Option} from "nest-commander";
 
 import {UserService} from "../user.service";
 import {IsInt, IsOptional, Min} from "class-validator";
 import {Transform} from "class-transformer";
 import {ListUserCommand, ListUserHandler} from "@features/user/handlers/list-user";
 
-@SubCommand({
-    name: 'list',
+@Command({
+    name: 'user:list',
+    arguments: '<skip> <take> <query>'
 })
 export class ListUserCommandCli extends CommandRunner {
 

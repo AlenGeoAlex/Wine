@@ -1,5 +1,5 @@
 import {Injectable, Logger} from '@nestjs/common';
-import {IUser, NewUser, UpdateUser, User} from "common-models/dist/types/user.types";
+import {NewUser, UpdateUser, User} from "common-models/dist/types/user.types";
 import {IPaginatedQuery, ISearchable} from "@common/utils";
 import {ulid} from "ulid";
 import {DatabaseService} from "@db/database";
@@ -15,7 +15,7 @@ export class UserService {
         this.logger.log("UserService constructor called");
     }
 
-    public async create(from: IUser, options?: {}) : Promise<string> {
+    public async create(from: Partial<User>, options?: {}) : Promise<string> {
         this.logger.log("Trying to create a user with ", from)
         const id = ulid()
         const db = this.databaseService.getDb();
@@ -82,7 +82,7 @@ export class UserService {
         return query.selectAll().executeTakeFirst();
     }
 
-    public async update(id: string, user: IUser, options?: {
+    public async update(id: string, user: Partial<User>, options?: {
         isIdentityAsEmail: boolean,
     }) : Promise<boolean> {
         this.logger.log(`Trying to update user ${id} with `, user)

@@ -1,14 +1,12 @@
 import { Module } from '@nestjs/common';
 import {TusProvider} from "./tus.provider";
-import { UserTokenService } from './user-token.service';
 
 @Module({
     providers: [
-        TusProvider,
-        UserTokenService
+      TusProvider,
     ],
     exports: [
-        TusProvider
+      TusProvider,
     ]
 })
 export class SharedModule {}

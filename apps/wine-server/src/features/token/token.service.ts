@@ -1,5 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {DatabaseService} from "@db/database";
+import {NewDeviceToken} from "common-models/dist/types/user.types";
+import {ulid} from "ulid";
 
 @Injectable()
 export class TokenService {
@@ -7,6 +9,22 @@ export class TokenService {
     constructor(
         private readonly databaseService : DatabaseService,
     ) {
+    }
+
+    public async create(token: NewDeviceToken, options? : {}): Promise<string> {
+        const db = this.databaseService.getDb();
+        const id = ulid();
+        let result = await db.insertInto('deviceToken')
+            .values({
+                id: id,
+                token: token.token,
+                createdAt: token.createdAt,
+                disabled: this.databaseService.parseBoolean(false),
+                userId: token.userId,
+            })
+            .execute();
+
+        return id;
     }
 
     public async getUserIdByToken(token: string) : Promise<{

@@ -1,11 +1,11 @@
-import {CommandRunner, SubCommand, Option } from "nest-commander";
+import {CommandRunner, Option, Command} from "nest-commander";
 import { IsOptional } from "class-validator";
 import {UserService} from "@features/user/user.service";
 import {UpdateUserCommand, UpdateUserError, UpdateUserHandler} from "@features/user/handlers/update-user";
 import {DatabaseService} from "@db/database";
 
 
-@SubCommand({ name: 'update', arguments: '' })
+@Command({ name: 'user:update', arguments: '[id] <name> <disabled>' })
 export class UpdateUserCommandCli extends CommandRunner {
 
     constructor(

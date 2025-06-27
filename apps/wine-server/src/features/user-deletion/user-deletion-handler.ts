@@ -1,46 +1,22 @@
+import { Injectable } from '@nestjs/common';
 import {ICommandHandler, ICommandRequest, ICommandResponse} from "@common/utils";
 import {UserService} from "@features/user/user.service";
-import {UserTokenService} from "@shared/user-token.service";
 import {DatabaseService} from "@db/database";
+import {TokenService} from "@features/token/token.service";
 
-export class DeleteUserCommand implements ICommandRequest<DeleteUserResponse>{
-    id?: string;
-    email?: string;
-
-    constructor(id?: string, email?: string) {
-        this.id = id;
-        this.email = email;
-    }
-}
-export class DeleteUserResponse implements ICommandResponse{
-
-}
-
-export class DeleteUserError implements ICommandResponse{
-    code: number;
-    message: string;
-    meta?: Record<string, string>;
-
-
-    constructor(code: number, message: string) {
-        this.code = code;
-        this.message = message;
-    }
-}
-
-export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand, DeleteUserResponse>{
-
+@Injectable()
+export class UserDeletionHandler implements ICommandHandler<UserDeletionCommand, UserDeletionResponse>{
     constructor(
         private readonly userService : UserService,
         private readonly databaseService : DatabaseService,
-        private readonly userTokenService : UserTokenService,
+        private readonly tokenService : TokenService,
     ) {
     }
 
-    async executeAsync(params: DeleteUserCommand): Promise<DeleteUserResponse> {
+    async executeAsync(params: UserDeletionCommand): Promise<UserDeletionResponse> {
 
         if(!params.id && !params.email){
-            return new DeleteUserError(
+            return new UserDeletionError(
                 400,
                 "Id or email are required",
             );
@@ -52,7 +28,7 @@ export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand, Del
                 .findByEmail(params.email!);
 
             if(!user){
-                return new DeleteUserError(
+                return new UserDeletionError(
                     404,
                     "User not found",
                 );
@@ -65,19 +41,41 @@ export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand, Del
         const transaction = await this.databaseService.transaction();
         try {
 
-            await this.userTokenService.deleteTokensOfUser(id);
+            await this.tokenService.deleteTokensOfUser(id);
             await this.userService.deleteUser(id);
             await transaction.commit().execute();
-            return new DeleteUserResponse();
+            return new UserDeletionResponse();
         }catch (e){
             transaction.rollback();
-            return new DeleteUserError(
+            return new UserDeletionError(
                 500,
                 "Failed to delete user",
             );
         }
     }
+}
+
+export class UserDeletionCommand implements ICommandRequest<UserDeletionResponse>{
+    id?: string;
+    email?: string;
+
+    constructor(id?: string, email?: string) {
+        this.id = id;
+        this.email = email;
+    }
+}
+export class UserDeletionResponse implements ICommandResponse{
+
+}
+
+export class UserDeletionError implements ICommandResponse{
+    code: number;
+    message: string;
+    meta?: Record<string, string>;
 
 
-
+    constructor(code: number, message: string) {
+        this.code = code;
+        this.message = message;
+    }
 }

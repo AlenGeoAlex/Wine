@@ -1,6 +1,6 @@
 import {ICommandHandler, ICommandRequest, ICommandResponse, IPaginatedQuery, ISearchable} from "@common/utils";
 import {UserService} from "@features/user/user.service";
-import {IUser} from "common-models/dist/types/user.types";
+import {User} from "common-models/dist/types/user.types";
 
 export class ListUserCommand implements ICommandRequest<ListUserResponse>, IPaginatedQuery, ISearchable {
     searchTerm: string | undefined;
@@ -16,14 +16,14 @@ export class ListUserCommand implements ICommandRequest<ListUserResponse>, IPagi
 }
 
 export class ListUserResponse implements ICommandResponse {
-    private readonly _items: ReadonlyArray<IUser>
+    private readonly _items: ReadonlyArray<User>
 
-    constructor(items: IUser[]) {
+    constructor(items: User[]) {
         this._items = items;
     }
 
 
-    get items(): ReadonlyArray<IUser> {
+    get items(): ReadonlyArray<User> {
         return this._items;
     }
 }
