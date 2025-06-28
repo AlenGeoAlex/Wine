@@ -1,7 +1,13 @@
 export const CONSTANTS = {
+
+    MIDDLEWARE_KEYS : {
+        API_KEY_USER: "API_KEY_USER"
+    },
+
     CONFIG_KEYS : {
         GENERAL : {
-            LOG_QUERY: "LOG_QUERY"
+            LOG_QUERY: "LOG_QUERY",
+            ALLOWED_MIME_TYPES: "ALLOWED_MIME_TYPES"
         },
 
         DATABASE: {
@@ -30,7 +36,8 @@ export const CONSTANTS = {
                 S3_SECRET_KEY : 'S3_SECRET_KEY',
                 S3_REGION : 'S3_REGION',
                 S3_ENDPOINT : 'S3_ENDPOINT',
-                S3_PART_SIZE: 'S3_PART_SIZE'
+                S3_PART_SIZE: 'S3_PART_SIZE',
+                S3_PRESIGNED_UPLOAD: "S3_PRESIGNED_UPLOAD"
             }
         }
     },

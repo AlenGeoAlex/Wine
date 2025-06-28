@@ -46,9 +46,11 @@ struct CloudSharingSettings: View {
                 
                 switch settingsService.uploadSettings.type {
                 case .wine(_):
-                    SelfHostedWine(selfHostedConfiguration: $settingsService.uploadSettings.type.wineSettings)
+                    SelfHostedWine()
                 case .s3(_):
                     S3HostedSetting(s3Setting: $settingsService.uploadSettings.type.s3Settings)
+                case .none:
+                    EmptyView()
                 default:
                     ComingSoon()
                 }

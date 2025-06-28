@@ -127,7 +127,7 @@ class SettingsService : ObservableObject {
         }
     }
     
-    private func saveUploadSettings(uploadSettings: UploadSource){
+    public func saveUploadSettings(uploadSettings: UploadSource){
         UserDefaults.standard.set(uploadSettings.id, forKey: AppConstants.Settings.uploadTypeSetting)
         logger.info("Saving upload settings to OSX Keychain")
         switch uploadSettings {

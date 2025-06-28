@@ -6,6 +6,8 @@ import {CONSTANTS} from "@common/constants";
 import {StorageProvider} from "@common/enums";
 import {S3Store} from "@tus/s3-store";
 import * as path from 'path';
+import { FileService } from '@/features/file/file.service';
+import {FileUploadHandler} from "@features/file/handlers/file-upload-handler";
 
 @Injectable()
 export class TusProvider {
@@ -14,13 +16,70 @@ export class TusProvider {
     private readonly tusServer : Server;
 
     constructor(
-        private readonly configService : ConfigService
+        private readonly configService : ConfigService,
+        private readonly fileService: FileService,
+        private readonly fileUploadHandler: FileUploadHandler,
     ) {
         const provider = configService.get<string>(CONSTANTS.CONFIG_KEYS.STORAGE.STORAGE_PROVIDER) ?? StorageProvider.FS;
         this.logger.log(`TusProvider initialized with provider ${provider}`);
         this.tusServer = new Server({
-            path: '/files',
-            datastore: this.initializeDataStore(provider as StorageProvider)
+            path: '/api/v1/file/upload',
+            datastore: this.initializeDataStore(provider as StorageProvider),
+
+            onIncomingRequest: async (req, res) => {
+                const uploadId = req.url.split('/').pop();
+                if (req.method === 'POST' || !uploadId) {
+                    return;
+                }
+
+                try {
+                    await this.fileUploadHandler.validateRequest(uploadId);
+                } catch (error) {
+                    this.logger.warn(`Validation failed for ${req.method} ${req.url}: ${error.message}`);
+                    const status = error.status || 500;
+                    const message = error.message || 'An unexpected error occurred during validation.';
+                    throw error;
+                }
+            },
+
+            namingFunction: async (req) => {
+                const id = req.url.split('/').pop();
+                if (!id) {
+                    this.logger.error('Could not extract upload ID from request URL');
+                    throw new Error('Invalid upload URL.');
+                }
+
+                const upload = await this.fileService.getUpload(id);
+                if (!upload) {
+                    this.logger.error(`Upload attempt for non-existent ID: ${id}`);
+                    throw { body: 'Upload not found', status_code: 404 };
+                }
+
+                this.logger.log(`Mapping upload ID ${id} to fileKey: ${upload.fileKey}`);
+
+                return upload.fileKey;
+            },
+            onUploadFinish: async (req, upload) => {
+                const fileKey = upload.id;
+                this.logger.log(`Upload finished for fileKey: ${fileKey}. Final size: ${upload.size}`);
+                const originalUpload = await this.fileService.getUploadByFileKey(fileKey);
+                if (originalUpload) {
+                    await this.fileService.updateUploadStatus(originalUpload.id, {
+                        status: 'done'
+                    });
+                    this.logger.log(`Updated status to 'completed' for upload ID: ${originalUpload.id}`);
+                } else {
+                    this.logger.error(`Could not find matching upload record for fileKey: ${fileKey}`);
+                }
+
+                return {
+                    status_code: 204,
+                    headers: undefined,
+                };
+            },
+            // onUploadError: async (req, res, error) => {
+            //     // Similar logic for failures
+            // }
         })
     }
 

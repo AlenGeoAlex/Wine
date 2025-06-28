@@ -7,7 +7,7 @@ import {ListUserCommand, ListUserHandler} from "@features/user/handlers/list-use
 
 @Command({
     name: 'user:list',
-    arguments: '<skip> <take> <query>'
+    description: "Lists out the user"
 })
 export class ListUserCommandCli extends CommandRunner {
 

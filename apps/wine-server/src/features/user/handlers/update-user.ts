@@ -71,6 +71,9 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand, Upd
                 },
                 {
                     isIdentityAsEmail: typeof params.id === "undefined"
+                },
+                {
+                    trx: transaction
                 }
             )
             await transaction.commit().execute();

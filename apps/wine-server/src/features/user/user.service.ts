@@ -1,8 +1,11 @@
 import {Injectable, Logger} from '@nestjs/common';
-import {NewUser, UpdateUser, User} from "common-models/dist/types/user.types";
+import { User } from "common-models/dist/types/user.types";
 import {IPaginatedQuery, ISearchable} from "@common/utils";
 import {ulid} from "ulid";
 import {DatabaseService} from "@db/database";
+import {EventEmitter2} from "@nestjs/event-emitter";
+import {namespaceOf} from "@common/events";
+import {IServiceOptions} from "common-models";
 
 @Injectable()
 export class UserService {
@@ -11,14 +14,15 @@ export class UserService {
 
     constructor(
         private readonly databaseService : DatabaseService,
+        private readonly eventEmitter : EventEmitter2,
     ) {
         this.logger.log("UserService constructor called");
     }
 
-    public async create(from: Partial<User>, options?: {}) : Promise<string> {
+    public async create(from: Partial<User>, options?: IServiceOptions) : Promise<string> {
         this.logger.log("Trying to create a user with ", from)
         const id = ulid()
-        const db = this.databaseService.getDb();
+        const db = options?.trx ?? this.databaseService.getDb();
         await db
             .insertInto('user')
             .values({
@@ -36,8 +40,9 @@ export class UserService {
     public async list(options: {
         pagination?: IPaginatedQuery,
         search?: ISearchable,
-    }) :  Promise<User[]> {
-        const db = this.databaseService.getDb();
+
+    }, serviceOptions?: IServiceOptions) :  Promise<User[]> {
+        const db = serviceOptions?.trx ?? this.databaseService.getDb();
         let query = db
             .selectFrom('user');
 
@@ -64,8 +69,8 @@ export class UserService {
             .selectAll().execute();
     }
 
-    public async findById(id: string, options?: {}) : Promise<User | undefined> {
-        const db = this.databaseService.getDb();
+    public async findById(id: string, options?: IServiceOptions) : Promise<User | undefined> {
+        const db = options?.trx ?? this.databaseService.getDb();
         let query = db
             .selectFrom('user')
             .where('id', '=', id)
@@ -73,8 +78,8 @@ export class UserService {
         return query.selectAll().executeTakeFirst();
     }
 
-    public async findByEmail(email: string, options?: {}): Promise<User | undefined> {
-        const db = this.databaseService.getDb();
+    public async findByEmail(email: string, options?: IServiceOptions): Promise<User | undefined> {
+        const db = options?.trx ?? this.databaseService.getDb();
         let query = db
             .selectFrom('user')
             .where('email', '=', email)
@@ -84,9 +89,9 @@ export class UserService {
 
     public async update(id: string, user: Partial<User>, options?: {
         isIdentityAsEmail: boolean,
-    }) : Promise<boolean> {
+    }, serviceOptions?: IServiceOptions) : Promise<boolean> {
         this.logger.log(`Trying to update user ${id} with `, user)
-        const db = this.databaseService.getDb();
+        const db = serviceOptions?.trx ?? this.databaseService.getDb();
         let query = db.updateTable('user');
         let hasMutations = false;
         if(user.name){
@@ -116,15 +121,27 @@ export class UserService {
         if(!result || result.length === 0)
             return false;
 
+        this.eventEmitter.emitAsync(namespaceOf('updated', "user"), {
+            id: id,
+        }).catch(e => {
+            this.logger.error(e);
+        })
         const updateResult = result[0];
         return updateResult.numUpdatedRows >= 0;
     }
 
-    public async deleteUser(id: string) {
-        await this.databaseService.getDb()
+    public async deleteUser(id: string, options?: IServiceOptions) {
+        const db = options?.trx ?? this.databaseService.getDb();
+        await db
             .deleteFrom('user')
             .where('id', '=', id)
             .execute();
+
+        this.eventEmitter.emitAsync(namespaceOf('deleted', "user"), {
+            id: id,
+        }).catch(e => {
+            this.logger.error(e);
+        })
     }
 
 

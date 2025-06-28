@@ -20,13 +20,17 @@ export class UserCreationHandler implements ICommandHandler<UserCreationCommand,
     async executeAsync(params: UserCreationCommand): Promise<UserCreationCommandResponse | UserCreationError> {
         const transaction = await this.databaseService.transaction();
         try {
+
             const user = await this.userService.create({
                 id: ulid(),
                 email: params.email,
                 disabled: params.disabled,
                 createdAt: new Date(),
                 name: params.name ?? "Unnamed User",
+            }, {
+                trx: transaction
             })
+
 
             const token = params.token ?? `${crypto.randomUUID().replace(/-/g, "").toUpperCase()}`;
             await this.tokenService.create({
@@ -35,7 +39,10 @@ export class UserCreationHandler implements ICommandHandler<UserCreationCommand,
                 token: token,
                 createdAt: new Date(),
                 userId: user
+            }, {
+                trx: transaction
             })
+
             await transaction.commit().execute();
             return new UserCreationCommandResponse(user, token);
         }catch (e) {

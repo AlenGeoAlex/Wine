@@ -8,7 +8,7 @@ export interface UserCreatedEvent extends UserEvent {
 }
 
 export interface UserUpdatedEvent extends UserEvent  {
-
+    id: string;
 }
 
 export interface UserDeletedEvent extends UserEvent  {

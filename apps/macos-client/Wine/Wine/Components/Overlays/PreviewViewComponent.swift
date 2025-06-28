@@ -17,6 +17,7 @@ enum ProcessingState: Equatable {
     case uploading
     case deleting
     case failedDeleting;
+    case failedUploading;
     
     var message: String {
         switch self {
@@ -30,6 +31,8 @@ enum ProcessingState: Equatable {
             return "Deleting File..."
         case .failedDeleting:
             return "Failed to delete file."
+        case .failedUploading:
+            return "Failed to upload file."
         }
     }
     
@@ -44,7 +47,7 @@ enum ProcessingState: Equatable {
     
     var isError : Bool {
         switch self {
-        case .failedDeleting:
+        case .failedDeleting, .failedUploading:
             return true
         default:
             return false
@@ -70,6 +73,7 @@ struct PreviewViewComponent: View {
     let isInInteraction: (Bool) -> Void
     
     @InjectedObject(\.settingsService) private var settingsService : SettingsService
+    @Injected(\.screenshotOrchestra) private var screenshotOrchestra: AppOrchestra;
     @State private var isHovering = false
     @State private var isShareLinkHovering = false
     
@@ -151,10 +155,23 @@ struct PreviewViewComponent: View {
                             ActionButton(iconName: "icloud.and.arrow.up", isInInteraction: self.isInInteraction, hoverColor: .blue) {
                                 Task {
                                     self.processingState = .uploading
-
-                                    try? await Task.sleep(for: .seconds(2))
-                                    self.processingState = .none
-                                    onClose()
+                                    self.isInInteraction(true);
+                                    let response = await self.screenshotOrchestra.tryUpload(capturedFile: self.uploadContent)
+                                    try? await Task.sleep(for: .seconds(3))
+                                    var isSuccess : Bool = false;
+                                    switch response {
+                                        case .success:
+                                        isSuccess = true;
+                                        self.processingState = .none
+                                    case .failure:
+                                        self.processingState = .failedUploading
+                                    }
+    
+                                    try? await Task.sleep(for: .seconds(3))
+                                    self.isInInteraction(false);
+                                    if isSuccess {
+                                        onClose()
+                                    }
                                 }
                             }
                         }

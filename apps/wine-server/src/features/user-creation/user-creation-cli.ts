@@ -8,7 +8,6 @@ import {
 
 @Command({
     name: "user:create",
-    arguments: "[email] [name] <token>",
     description: "Create a new user",
 })
 export class CreateUserCommandCli extends CommandRunner {
@@ -24,6 +23,7 @@ export class CreateUserCommandCli extends CommandRunner {
             console.error("Email is required");
             return;
         }
+
 
         const creationResponse = await this.userCreationHandler.executeAsync(new UserCreationCommand(options.email, options.name, false));
         if(creationResponse instanceof UserCreationCommandResponse){

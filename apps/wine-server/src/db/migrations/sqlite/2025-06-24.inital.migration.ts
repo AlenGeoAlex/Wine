@@ -27,7 +27,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     await db.schema
         .createTable('upload')
         .addColumn('id', 'varchar(40)', (col) => col.primaryKey().notNull())
-        .addColumn('fileKey', 'text', (col) => col.notNull().unique())
+        .addColumn('fileKey', 'text')
         .addColumn('status', 'text', (col) => col.defaultTo('created').notNull())
         .addColumn('fileName', 'text', (col) => col.notNull())
         .addColumn('contentType', 'text', (col) => col.notNull())
@@ -36,6 +36,9 @@ export async function up(db: Kysely<any>): Promise<void> {
         .addColumn('createdAt', 'text', (col) =>
             col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull(),
         )
+        .addColumn('extension', 'varchar(10)', (col) => col.notNull().defaultTo(''))
+        .addColumn('userId', 'varchar(40)', (col) => col.notNull().references('user.id').onUpdate('cascade').onDelete('cascade'))
+        .addUniqueConstraint("UNQ_unique_fileKey_user", ["fileKey", "userId"])
         .execute();
 }
 

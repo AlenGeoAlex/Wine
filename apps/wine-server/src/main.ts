@@ -14,7 +14,21 @@ async function bootstrap() {
   })
 
   app.useGlobalPipes(new ValidationPipe());
-  app.use(helmet());
+  app.use(
+      helmet({
+        contentSecurityPolicy: {
+          directives: {
+            ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+            "script-src": ["'self'", "https://releases.transloadit.com"], // <-- 1. Allow 'self' AND the Uppy CDN
+            // If you MUST use the inline script from the previous answer, add 'unsafe-inline'
+            // "script-src-elem": ["'self'", "https://releases.transloadit.com", "'unsafe-inline'"],
+          },
+        },
+      }),
+  );
+
+  // Make sure CORS is enabled
+  app.enableCors();
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

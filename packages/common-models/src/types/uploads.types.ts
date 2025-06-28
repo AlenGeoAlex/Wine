@@ -9,6 +9,9 @@ export interface UploadTable {
     tags : JSONColumnType<string[]>
     size : ColumnType<number, number, never>
     createdAt: ColumnType<Date, Date | string, never>
+    userId: ColumnType<string, string, never>
+    extension: ColumnType<string, string, never>
+    expiration: ColumnType<Date | undefined, Date | string | undefined, Date | string | undefined>
 }
 
 export type Upload = Selectable<UploadTable>

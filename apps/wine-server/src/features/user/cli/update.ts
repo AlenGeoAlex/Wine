@@ -5,7 +5,7 @@ import {UpdateUserCommand, UpdateUserError, UpdateUserHandler} from "@features/u
 import {DatabaseService} from "@db/database";
 
 
-@Command({ name: 'user:update', arguments: '[id] <name> <disabled>' })
+@Command({ name: 'user:update', description: 'Update a user' })
 export class UpdateUserCommandCli extends CommandRunner {
 
     constructor(

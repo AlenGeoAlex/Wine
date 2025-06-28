@@ -8,12 +8,20 @@
 import SwiftUI
 
 class SelfHostedWineViewModel: ObservableObject {
+
     
-    init(){
-        self.lastServerAddressErrorMessage = nil;
-    }
-    
+    @Published var serverAddress: URL? = nil;
+    @Published var secureToken: String = "";
     @Published var lastServerAddressErrorMessage : String? = "";
+    @Published var canSave : Bool = false;
+    
+    init(serverAddress: URL? = nil, secureToken: String) {
+        self.serverAddress = serverAddress
+        self.secureToken = secureToken
+        self.lastServerAddressErrorMessage = nil
+        self.canSave = false
+        validateSave();
+    }
     
     func validateServerAddress(_ serverAddress: String) -> Bool {
         if serverAddress.isEmpty {
@@ -28,5 +36,13 @@ class SelfHostedWineViewModel: ObservableObject {
         
         self.lastServerAddressErrorMessage = nil;
         return true;
+    }
+    
+    func validateSave() {
+        if self.serverAddress == nil || self.secureToken.isEmpty {
+            self.canSave = false;
+        }else {
+            self.canSave = true;
+        }
     }
 }

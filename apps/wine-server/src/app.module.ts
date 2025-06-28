@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import {MiddlewareConsumer, Module, NestModule} from '@nestjs/common';
 import {AppController} from "@features/app/app.controller";
 import {ConfigModule} from "@nestjs/config";
 import { DatabaseModule } from '@db/database.module';
@@ -8,12 +8,12 @@ import {TokenModule} from "@features/token/token.module";
 import {FileModule} from "@features/file/file.module";
 import {DIServiceProvider} from "@common/di.service.provider";
 import {SharedModule} from "@shared/shared.module";
-import { UploadModule } from '@features/upload/upload.module';
 import {ServeStaticModule} from "@nestjs/serve-static";
 import { join } from 'path';
 import {EventEmitterModule} from "@nestjs/event-emitter";
-import { UserCreationModule } from './features/user-creation/user-creation.module';
-import { UserDeletionModule } from './features/user-deletion/user-deletion.module';
+import { UserCreationModule } from '@features/user-creation/user-creation.module';
+import { UserDeletionModule } from '@features/user-deletion/user-deletion.module';
+import {ApiUserMiddlewareMiddleware} from "@/middleware/api-user-middleware.middleware";
 
 @Module({
     imports: [
@@ -21,6 +21,7 @@ import { UserDeletionModule } from './features/user-deletion/user-deletion.modul
             isGlobal: true,
         }),
         ClsModule.forRoot({
+            global: true,
             middleware: {
                 mount: true,
                 setup: (cls, req) => {
@@ -41,13 +42,18 @@ import { UserDeletionModule } from './features/user-deletion/user-deletion.modul
         TokenModule,
         FileModule,
         SharedModule,
-        UploadModule,
         UserCreationModule,
         UserDeletionModule,
     ],
     controllers: [AppController],
     providers: [
-        DIServiceProvider
+        DIServiceProvider,
     ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+    configure(consumer : MiddlewareConsumer) {
+        consumer
+            .apply(ApiUserMiddlewareMiddleware)
+            .forRoutes('api/v1/file')
+    }
+}

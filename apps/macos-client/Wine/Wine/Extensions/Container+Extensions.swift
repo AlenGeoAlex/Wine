@@ -30,10 +30,7 @@ extension Container {
     var screenshotOrchestra : Factory<AppOrchestra> {
         Factory(self) {
             AppOrchestra(
-                settingsService: self.settingsService.resolve(),
-                screenshotCapture: self.imageCaptureProtocol.resolve(),
-                clopIntegration: self.clopIntegration.resolve(),
-                previewOverlayService: self.previewOverlayService.resolve()
+                container: self
             )
         }.singleton
     }
@@ -55,6 +52,12 @@ extension Container {
     var previewOverlayService : Factory<OverlayWindowService> {
         Factory(self) {
             OverlayWindowService()
+        }.singleton
+    }
+    
+    var fileUploadApi : Factory<FileUploadApiService> {
+        Factory(self) {
+            FileUploadApiService()
         }.singleton
     }
     

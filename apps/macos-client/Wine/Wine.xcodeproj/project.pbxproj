@@ -12,7 +12,6 @@
 		5896C8292E07005D004373C3 /* FactoryKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5896C8282E07005D004373C3 /* FactoryKit */; };
 		5896C82B2E07005D004373C3 /* FactoryTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 5896C82A2E07005D004373C3 /* FactoryTesting */; };
 		5896C82E2E070071004373C3 /* ScreenCaptureKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5896C82D2E070071004373C3 /* ScreenCaptureKit.framework */; };
-		58A854042E0C6A0A006F9866 /* TUSKit in Frameworks */ = {isa = PBXBuildFile; productRef = 58A854032E0C6A0A006F9866 /* TUSKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -75,7 +74,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				58A854042E0C6A0A006F9866 /* TUSKit in Frameworks */,
 				5896C8292E07005D004373C3 /* FactoryKit in Frameworks */,
 				5896C82E2E070071004373C3 /* ScreenCaptureKit.framework in Frameworks */,
 				5896C8272E07005D004373C3 /* Factory in Frameworks */,
@@ -153,7 +151,6 @@
 				5896C8262E07005D004373C3 /* Factory */,
 				5896C8282E07005D004373C3 /* FactoryKit */,
 				5893EE1F2E07C9DF006878C3 /* ClopSDK */,
-				58A854032E0C6A0A006F9866 /* TUSKit */,
 			);
 			productName = Wine;
 			productReference = 5896C7FA2E06FF4F004373C3 /* Wine.app */;
@@ -241,7 +238,6 @@
 			packageReferences = (
 				5896C8252E07005D004373C3 /* XCRemoteSwiftPackageReference "Factory" */,
 				5893EE1E2E07C9DF006878C3 /* XCRemoteSwiftPackageReference "ClopSDK" */,
-				58A854022E0C6A0A006F9866 /* XCRemoteSwiftPackageReference "TUSKit" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5896C7FB2E06FF4F004373C3 /* Products */;
@@ -621,14 +617,6 @@
 				minimumVersion = 2.5.3;
 			};
 		};
-		58A854022E0C6A0A006F9866 /* XCRemoteSwiftPackageReference "TUSKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/tus/TUSKit.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 3.5.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -651,11 +639,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 5896C8252E07005D004373C3 /* XCRemoteSwiftPackageReference "Factory" */;
 			productName = FactoryTesting;
-		};
-		58A854032E0C6A0A006F9866 /* TUSKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 58A854022E0C6A0A006F9866 /* XCRemoteSwiftPackageReference "TUSKit" */;
-			productName = TUSKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
