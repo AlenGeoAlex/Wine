@@ -7,7 +7,9 @@ export const CONSTANTS = {
     CONFIG_KEYS : {
         GENERAL : {
             LOG_QUERY: "LOG_QUERY",
-            ALLOWED_MIME_TYPES: "ALLOWED_MIME_TYPES"
+            ALLOWED_MIME_TYPES: "ALLOWED_MIME_TYPES",
+            BASE_DOMAIN: "BASE_DOMAIN",
+            NOT_FOUND_HTML: "NOT_FOUND_HTML"
         },
 
         DATABASE: {

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Image Not Found</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --checker-light: #e0e0e0;
+            --checker-dark: #c7c7c7;
+            --checker-size: 40px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--checker-light);
+            background-image:
+                    linear-gradient(45deg, var(--checker-dark) 25%, transparent 25%),
+                    linear-gradient(-45deg, var(--checker-dark) 25%, transparent 25%),
+                    linear-gradient(45deg, transparent 75%, var(--checker-dark) 75%),
+                    linear-gradient(-45deg, transparent 75%, var(--checker-dark) 75%);
+            background-size: var(--checker-size) var(--checker-size);
+            background-position: 0 0, 0 calc(var(--checker-size)/2), calc(var(--checker-size)/2) calc(var(--checker-size)/-2), calc(var(--checker-size)/-2) 0px;
+
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 40px 50px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px); /* For Safari */
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            max-width: 90%;
+        }
+
+        .glitch-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .glitch {
+            font-size: 10rem;
+            font-weight: 700;
+            position: relative;
+            color: #222;
+            letter-spacing: 0.05em;
+            --glitch-text: "404";
+            animation: glitch-shake 2.5s infinite linear;
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: var(--glitch-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .glitch::before {
+            color: #ff00c1; /* Magenta */
+            animation: glitch-effect 1.5s infinite linear alternate-reverse;
+            clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+        }
+
+        .glitch::after {
+            color: #00fff9; /* Cyan */
+            animation: glitch-effect 2s infinite linear alternate-reverse;
+            clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+        }
+
+        /* Keyframe Animations */
+
+        @keyframes glitch-shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+            20%, 40%, 60%, 80% { transform: translateX(3px); }
+        }
+
+        @keyframes glitch-effect {
+            0% { transform: translate(-4px, -2px); }
+            25% { transform: translate(4px, 2px); }
+            50% { transform: translate(-2px, 4px); }
+            75% { transform: translate(2px, -4px); }
+            100% { transform: translate(-4px, 2px); }
+        }
+
+        /* Styling for the message and button */
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #1a1a1a;
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 30px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: #3498db;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+            border-radius: 50px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .glitch {
+                font-size: 8rem;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+            .container {
+                padding: 30px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="glitch-wrapper">
+        <div class="glitch" data-text="404">404</div>
+    </div>
+    <h1>Image Not Found</h1>
+    <p>
+        Oops! The media file you are looking for appears to be corrupted, moved, or was never here to begin with.
+    </p>
+</div>
+
+</body>
+</html>

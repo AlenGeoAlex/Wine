@@ -1,22 +1,18 @@
 import {
-    All,
     Body,
-    Controller, HttpCode,
-    Logger, Param,
+    Controller,
+    HttpCode,
+    Logger,
+    Param,
     Post,
-    Query,
     Req,
     Res,
     UploadedFile,
     UseInterceptors,
     UsePipes
 } from '@nestjs/common';
-import { Request, Response } from 'express';
-import {
-    FileCreateHandler,
-    FileCreateRequest,
-    FileCreateResponse
-} from "@features/file/handlers/file-create-handler";
+import {Response} from 'express';
+import {FileCreateHandler, FileCreateRequest, FileCreateResponse} from "@features/file/handlers/file-create-handler";
 import {FileTypeValidationPipe} from "@/pipes/file-type-validation.pipe";
 import {CustomFileInterceptor} from "@/interceptor/custom-file.interceptor";
 import {FileUploadCommand, FileUploadHandler} from "@features/file/handlers/file-upload-handler";
@@ -59,11 +55,9 @@ export class FileController {
             throw new Error("Id is required");
         }
 
-        await this.fileUploadHandler.executeAsync(new FileUploadCommand(
+        return await this.fileUploadHandler.executeAsync(new FileUploadCommand(
             params.id,
             file.buffer
-        ))
-
-        return;
+        ));
     }
 }

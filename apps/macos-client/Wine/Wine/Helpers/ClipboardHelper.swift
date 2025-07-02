@@ -46,4 +46,13 @@ class ClipboardHelper {
         
         return success
     }
+    
+    @discardableResult
+    static func copyStringToClipboard(_ string: String) -> Bool {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        logger.info("Copying string to clipboard: \(string)")
+        pasteboard.setString(string, forType: .string)
+        return true
+    }
 }

@@ -4,8 +4,8 @@ import { FileService } from '@features/file/file.service';
 import { CONSTANTS } from '@common/constants';
 import {ICommandHandler, ICommandRequest, ICommandResponse} from "@common/utils";
 import {FileSaverProvider} from "@shared/file-saver.provider";
-import * as path from 'path';
 import {Upload} from "common-models";
+import {ConfigService} from "@nestjs/config";
 
 export class FileUploadCommand implements ICommandRequest<FileUploadResponse> {
     uploadId: string;
@@ -18,7 +18,8 @@ export class FileUploadCommand implements ICommandRequest<FileUploadResponse> {
 }
 
 export class FileUploadResponse implements ICommandResponse{
-
+    domain?: string;
+    fileId: string;
 }
 
 
@@ -29,7 +30,8 @@ export class FileUploadHandler implements ICommandHandler<FileUploadCommand, Fil
     constructor(
         private readonly clsService: ClsService,
         private readonly fileService: FileService,
-        private readonly fileSaverProvider : FileSaverProvider
+        private readonly fileSaverProvider : FileSaverProvider,
+        private readonly configService: ConfigService,
     ) {}
 
     /**
@@ -82,6 +84,10 @@ export class FileUploadHandler implements ICommandHandler<FileUploadCommand, Fil
         await this.fileService.updateUploadStatus(upload.id, {
             status: 'done'
         });
-        return new FileUploadResponse();
+        const fileUploadResponse = new FileUploadResponse();
+        fileUploadResponse.domain = this.configService.get<string>(CONSTANTS.CONFIG_KEYS.GENERAL.BASE_DOMAIN) ?? "";
+        fileUploadResponse.fileId = upload.id.toLowerCase();
+        this.logger.log(`File upload completed for upload ${upload.id} with fileId ${fileUploadResponse.fileId} and domain ${fileUploadResponse.domain}`)
+        return fileUploadResponse
     }
 }

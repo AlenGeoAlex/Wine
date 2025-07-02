@@ -14,6 +14,7 @@ import {EventEmitterModule} from "@nestjs/event-emitter";
 import { UserCreationModule } from '@features/user-creation/user-creation.module';
 import { UserDeletionModule } from '@features/user-deletion/user-deletion.module';
 import {ApiUserMiddlewareMiddleware} from "@/middleware/api-user-middleware.middleware";
+import { StaticController } from './static.controller';
 
 @Module({
     imports: [
@@ -30,7 +31,8 @@ import {ApiUserMiddlewareMiddleware} from "@/middleware/api-user-middleware.midd
             }
         }),
         ServeStaticModule.forRoot({
-            rootPath: join(__dirname, '..', 'static')
+            rootPath: join(__dirname, '..', 'static'),
+            exclude: ['/index.html']
         }),
         EventEmitterModule.forRoot({
             global: true,
@@ -45,7 +47,7 @@ import {ApiUserMiddlewareMiddleware} from "@/middleware/api-user-middleware.midd
         UserCreationModule,
         UserDeletionModule,
     ],
-    controllers: [AppController],
+    controllers: [AppController, StaticController],
     providers: [
         DIServiceProvider,
     ],

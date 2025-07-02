@@ -18,6 +18,7 @@ enum ProcessingState: Equatable {
     case deleting
     case failedDeleting;
     case failedUploading;
+    case linkCopied;
     
     var message: String {
         switch self {
@@ -33,6 +34,8 @@ enum ProcessingState: Equatable {
             return "Failed to delete file."
         case .failedUploading:
             return "Failed to upload file."
+        case .linkCopied:
+            return "Link copied to clipboard!"
         }
     }
     
@@ -56,7 +59,7 @@ enum ProcessingState: Equatable {
     
     var isSuccess : Bool {
         switch self {
-        case .none:
+        case .none, .linkCopied:
             return true
         default:
             return false
@@ -162,7 +165,7 @@ struct PreviewViewComponent: View {
                                     switch response {
                                         case .success:
                                         isSuccess = true;
-                                        self.processingState = .none
+                                        self.processingState = .linkCopied
                                     case .failure:
                                         self.processingState = .failedUploading
                                     }

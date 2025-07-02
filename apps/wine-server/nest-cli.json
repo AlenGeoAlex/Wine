@@ -4,6 +4,13 @@
   "sourceRoot": "src",
   "compilerOptions": {
     "deleteOutDir": true,
+    "assets": [
+      {
+        "include": "../static/**",
+        "outDir": "dist/apps/wine-server/static",
+        "watchAssets": true
+      }
+    ],
     "paths": {
       "@/*": ["src/*"],
       "@common/*": ["src/common/*"],

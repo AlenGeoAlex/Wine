@@ -101,7 +101,16 @@ class AppOrchestra : ObservableObject {
             }
             
             logger.info("\(uploadUrl?.absoluteString ?? "")")
-            
+            if uploadUrl != nil {
+                ClipboardHelper.copyStringToClipboard(uploadUrl?.absoluteString ?? "")
+                let fileDeleteReponse = FileHelpers.delete(file: capturedFile.fileContent)
+                switch fileDeleteReponse {
+                case .success:
+                    logger.info("File deleted successfully")
+                case .failure(let error):
+                    logger.error("Failed to delete file \(error)")
+                }
+            }
             return .success(true);
         }
         catch

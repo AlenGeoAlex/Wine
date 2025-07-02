@@ -115,20 +115,30 @@ class FileUploadApiService {
         do {
             let (data, response) = try await URLSession.shared.data(for: urlRequest)
 
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 201 else {
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
                 logger.error("Server error: \(response)")
                 return nil
             }
-
-            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let uploadedUrlString = json["url"] as? String,
-               let uploadedUrl = URL(string: uploadedUrlString) {
-                return uploadedUrl
-            } else {
+            
+            guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
                 logger.error("\(data)")
                 logger.error("Invalid response body")
                 return nil
             }
+            
+            var domain: String?
+            domain = json["domain"] as? String ?? settings.serverAddress.absoluteString;
+            let fileId = json["fileId"] as? String;
+            
+            if(domain == nil || fileId == nil){
+                logger.error("\(data)")
+                logger.error("Failed to read the domain and fileId")
+                return nil
+            }
+            logger.info("Domain has been set to \(domain!) and fileId is \(fileId!)")
+            
+            let finalUrl = URL(string: domain!)!.appendingPathComponent(fileId!)
+            return finalUrl;
         } catch {
             logger.error("Upload failed: \(error)")
             return nil
