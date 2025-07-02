@@ -6,3 +6,4 @@
 /packages/common-models/dist/
 **/.env
 **/.idea/
+**/.vscode

@@ -3,7 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "pnpm": {
-    "inject-workspace-packages": true
+    "inject-workspace-packages": true,
+    "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "@swc/core",
+      "better-sqlite3",
+      "esbuild"
+    ]
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
