@@ -4,3 +4,5 @@
 **/.DS_Store
 /apps/wine-server/dist/
 /packages/common-models/dist/
+**/.env
+**/.idea/
