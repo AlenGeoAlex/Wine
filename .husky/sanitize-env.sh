@@ -7,7 +7,6 @@ if git diff --cached --name-only | grep -qE "/\.env$"; then
   echo "Push has been aborted. Please ensure all .env files are in your .gitignore."
   exit 1
 fi
-
 changes_made=false
 
 find . -type f -name ".env" -not -path "./node_modules/*" | while read -r env_file; do
