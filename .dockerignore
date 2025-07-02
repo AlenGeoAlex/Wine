@@ -1,0 +1,36 @@
+# .dockerignore
+
+# Docker specific
+.Dockerfile
+Dockerfile
+.dockerignore
+.DS_Store
+
+# Git and node
+.git
+.gitignore
+.github
+.husky
+node_modules
+**/*/node_modules
+
+# Build artifacts
+dist
+**/*/dist
+**/*.tsbuildinfo
+cache
+
+# Environment
+.env*
+
+# OS / IDE specific
+.vscode
+.idea
+*.swp
+*~
+
+# Don't include the macos client app
+apps/macos-client
+
+# Any other non-server apps
+apps/vue-app

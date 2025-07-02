@@ -34,6 +34,7 @@ class ScreenCaptureSession : NSObject, SCStreamDelegate, SCRecordingOutputDelega
         self.contentFilter = contentFiler
         self.streamConfiguration = streamConfiguration
         self.outputURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).mp4")
+        logger.info("Output URL is \(self.outputURL)")
         self.onFileReady = onFileReady
     }
     

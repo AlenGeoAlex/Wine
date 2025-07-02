@@ -1,6 +1,6 @@
 import {ICommandHandler, ICommandRequest, ICommandResponse, IPaginatedQuery, ISearchable} from "@common/utils";
 import {UserService} from "@features/user/user.service";
-import {User} from "common-models/dist/types/user.types";
+import {User} from "common-models";
 
 export class ListUserCommand implements ICommandRequest<ListUserResponse>, IPaginatedQuery, ISearchable {
     searchTerm: string | undefined;

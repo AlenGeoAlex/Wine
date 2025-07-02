@@ -1,9 +1,8 @@
 import {Injectable, Logger} from '@nestjs/common';
 import {DatabaseService} from "@db/database";
-import {NewUpload, UpdateUpload, Upload} from "common-models/dist/types/uploads.types";
 import {ulid} from "ulid";
 import {format} from 'date-fns';
-import {IServiceOptions} from "common-models";
+import {IServiceOptions, NewUpload, UpdateUpload, Upload} from "common-models";
 
 @Injectable()
 export class FileService {

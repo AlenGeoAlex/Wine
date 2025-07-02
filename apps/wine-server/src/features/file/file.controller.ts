@@ -1,8 +1,8 @@
 import {
     All,
     Body,
-    Controller,
-    Logger,
+    Controller, HttpCode,
+    Logger, Param,
     Post,
     Query,
     Req,
@@ -19,7 +19,7 @@ import {
 } from "@features/file/handlers/file-create-handler";
 import {FileTypeValidationPipe} from "@/pipes/file-type-validation.pipe";
 import {CustomFileInterceptor} from "@/interceptor/custom-file.interceptor";
-import {TusProvider} from "@shared/tus.provider";
+import {FileUploadCommand, FileUploadHandler} from "@features/file/handlers/file-upload-handler";
 
 
 @Controller('api/v1/file')
@@ -29,7 +29,7 @@ export class FileController {
 
     constructor(
         private readonly fileCreateHandler : FileCreateHandler,
-        private readonly tusProvider : TusProvider,
+        private readonly fileUploadHandler : FileUploadHandler,
     ) {
     }
 
@@ -52,8 +52,18 @@ export class FileController {
 
     @Post('upload/:id')
     @UseInterceptors(CustomFileInterceptor('file'))
+    @HttpCode(200)
     @UsePipes(FileTypeValidationPipe)
-    uploadFile(@UploadedFile() file: Express.Multer.File){
-        console.log(file);
+    async uploadFile(@Param() params: any , @UploadedFile() file: Express.Multer.File, @Req() res: Response){
+        if(!params.id || params.id.trim().length === 0){
+            throw new Error("Id is required");
+        }
+
+        await this.fileUploadHandler.executeAsync(new FileUploadCommand(
+            params.id,
+            file.buffer
+        ))
+
+        return;
     }
 }

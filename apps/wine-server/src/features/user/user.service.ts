@@ -1,11 +1,10 @@
 import {Injectable, Logger} from '@nestjs/common';
-import { User } from "common-models/dist/types/user.types";
 import {IPaginatedQuery, ISearchable} from "@common/utils";
 import {ulid} from "ulid";
 import {DatabaseService} from "@db/database";
 import {EventEmitter2} from "@nestjs/event-emitter";
 import {namespaceOf} from "@common/events";
-import {IServiceOptions} from "common-models";
+import {IServiceOptions, User} from "common-models";
 
 @Injectable()
 export class UserService {

@@ -1,11 +1,10 @@
 import {Injectable, Logger} from '@nestjs/common';
 import {DatabaseService} from "@db/database";
-import {NewDeviceToken} from "common-models/dist/types/user.types";
 import {ulid} from "ulid";
 import {EventEmitter2} from "@nestjs/event-emitter";
 import {namespaceOf} from "@common/events";
 import {TokenRevokedEvent} from "@features/token/dto/events/events";
-import {IServiceOptions} from "common-models";
+import {IServiceOptions, NewDeviceToken} from "common-models";
 
 @Injectable()
 export class TokenService {

@@ -28,6 +28,9 @@ export class FileTypeValidationPipe implements PipeTransform {
   }
 
   async transform(value: any, metadata: ArgumentMetadata){
+    if(metadata.type !== 'custom')
+      return value;
+
     if (!value || !value.buffer) {
       this.logger.error(`File is missing or unreadable`);
       throw new BadRequestException('File is missing or unreadable');

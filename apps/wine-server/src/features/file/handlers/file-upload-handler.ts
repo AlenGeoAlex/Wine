@@ -2,14 +2,34 @@ import { Injectable, Logger, NotFoundException, ForbiddenException, ConflictExce
 import { ClsService } from 'nestjs-cls';
 import { FileService } from '@features/file/file.service';
 import { CONSTANTS } from '@common/constants';
+import {ICommandHandler, ICommandRequest, ICommandResponse} from "@common/utils";
+import {FileSaverProvider} from "@shared/file-saver.provider";
+import * as path from 'path';
+import {Upload} from "common-models";
+
+export class FileUploadCommand implements ICommandRequest<FileUploadResponse> {
+    uploadId: string;
+    buffer: Buffer;
+
+    constructor(uploadId: string, buffer: Buffer) {
+        this.uploadId = uploadId;
+        this.buffer = buffer;
+    }
+}
+
+export class FileUploadResponse implements ICommandResponse{
+
+}
+
 
 @Injectable()
-export class FileUploadHandler {
+export class FileUploadHandler implements ICommandHandler<FileUploadCommand, FileUploadResponse>{
     private readonly logger = new Logger(FileUploadHandler.name);
 
     constructor(
         private readonly clsService: ClsService,
         private readonly fileService: FileService,
+        private readonly fileSaverProvider : FileSaverProvider
     ) {}
 
     /**
@@ -17,7 +37,7 @@ export class FileUploadHandler {
      * Throws an appropriate HTTP exception if validation fails.
      * @param uploadId The ID of the upload being accessed.
      */
-    public async validateRequest(uploadId: string): Promise<void> {
+    private async validateAndGetUpload(uploadId: string): Promise<Upload> {
         this.logger.debug(`Validating request for upload ID: ${uploadId}`);
 
         const currentUserId = this.clsService.get(CONSTANTS.MIDDLEWARE_KEYS.API_KEY_USER);
@@ -48,5 +68,20 @@ export class FileUploadHandler {
         }
 
         this.logger.debug(`Validation successful for upload ID: ${uploadId}`);
+        return upload;
+    }
+
+    async executeAsync(params: FileUploadCommand): Promise<FileUploadResponse> {
+        const upload = await this.validateAndGetUpload(params.uploadId)
+        const fileKey = upload.fileKey;
+        const fileKeyParts = fileKey.split("/");
+        const fileName = fileKeyParts.pop()!;
+        const response = await this.fileSaverProvider.uploadFile("", fileName, params.buffer);
+        this.logger.log(`Uploaded file ${fileKey} to ${response}`);
+
+        await this.fileService.updateUploadStatus(upload.id, {
+            status: 'done'
+        });
+        return new FileUploadResponse();
     }
 }

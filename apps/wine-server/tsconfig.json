@@ -22,7 +22,9 @@
       "@common/*": ["src/common/*"],
       "@db/*": ["src/db/*"],
       "@features/*": ["src/features/*"],
-      "@shared/*" : ["src/shared/*"]
+      "@shared/*" : ["src/shared/*"],
+      "common-models": ["../../packages/common-models/src"],
+      "common-models/*": ["../../packages/common-models/src/*"]
     }
   }
 }

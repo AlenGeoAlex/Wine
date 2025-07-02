@@ -5,6 +5,9 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -41,6 +44,7 @@
     "file-type": "^21.0.0",
     "helmet": "^8.1.0",
     "kysely": "^0.28.2",
+    "multer": "^2.0.1",
     "nest-commander": "^3.17.0",
     "nestjs-cls": "^6.0.1",
     "pg": "^8.16.2",
