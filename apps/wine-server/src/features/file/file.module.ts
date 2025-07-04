@@ -5,12 +5,16 @@ import {FileCreateHandler} from "@features/file/handlers/file-create-handler";
 import {ClsModule} from "nestjs-cls";
 import { FileUploadHandler } from './handlers/file-upload-handler';
 import {SharedModule} from "@shared/shared.module";
+import { FileContentHandler } from './handlers/file-content-handler.service';
+import { FileInfoHandler } from './handlers/file-info-handler';
 
 @Module({
     providers: [
         FileService,
         FileCreateHandler,
-        FileUploadHandler
+        FileUploadHandler,
+        FileContentHandler,
+        FileInfoHandler
     ],
     controllers: [FileController],
     imports: [

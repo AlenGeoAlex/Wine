@@ -14,12 +14,13 @@ class OverlayWindowService : NSObject {
     private let logger : Logger = Logger(subsystem: AppConstants.reversedDomain, category: "OverlayWindowService");
     
     private var overlayWindows : [UUID : PreviewPanel] = [:];
+    private var cloudShareWindow : [UUID : NSWindow] = [:];
     
-    public func showOverlay(with captureFile: CapturedFile){
+    public func showPreview(with captureFile: CapturedFile){
         let previewPanel = PreviewPanel(
             padding: 20, captureFile: captureFile, onClose: {
                 id in
-                self.closeOverlay(for: id)
+                self.closePreview(for: id)
             }
         )
         
@@ -29,7 +30,7 @@ class OverlayWindowService : NSObject {
         logger.info("Showing overlay window")
     }
     
-    public func closeOverlay(for uuid: UUID){
+    public func closePreview(for uuid: UUID){
         guard let panel = overlayWindows[uuid] else {
             logger.error("Could not find overlay window for \(uuid)")
             return

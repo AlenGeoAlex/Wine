@@ -64,8 +64,10 @@ class FileUploadApiService {
         
         let (data, response) = try await URLSession.shared.data(for: httpRequest)
         
+        
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 201 else {
             self.logger.log("Status Code: \((response as? HTTPURLResponse)?.statusCode ?? 0)")
+            self.logger.log("\(String(data: data, encoding: .utf8) ?? "No data")")
             throw UploadServiceError.failedToCreate;
         }
         

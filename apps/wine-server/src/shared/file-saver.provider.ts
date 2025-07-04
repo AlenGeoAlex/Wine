@@ -14,7 +14,7 @@ export class FileSaverProvider {
     ) {
     }
 
-    async uploadFile(dir: string, name: string, buffer: Buffer): Promise<string> {
+    async uploadFile(dir: string[], name: string, buffer: Buffer): Promise<string> {
         const rootPath = this.configService.get<string>(
             CONSTANTS.CONFIG_KEYS.STORAGE.FS.FS_FILE_PATH,
         );
@@ -26,7 +26,7 @@ export class FileSaverProvider {
         }
 
         try {
-            const parentDirectory = path.join(rootPath, dir);
+            const parentDirectory = path.join(rootPath, path.join(...dir));
             const fullFilePath = path.join(parentDirectory, name);
             await fs.mkdir(parentDirectory, { recursive: true });
             await fs.writeFile(fullFilePath, buffer);

@@ -4,14 +4,12 @@ import * as fs from 'fs';
 import { join } from 'path';
 import * as cheerio from 'cheerio';
 import {ConfigService} from "@nestjs/config";
-import {CONSTANTS} from "@common/constants";
 
 @Controller()
 export class StaticController {
 
     private readonly logger : Logger = new Logger(StaticController.name);
-    private imageView : string | undefined;
-    private notFoundHtml : string | undefined;
+    private vueApp : string | undefined;
 
     constructor(
         private readonly configService: ConfigService,
@@ -24,18 +22,8 @@ export class StaticController {
         try {
             const htmlPath = join(__dirname, '..', 'static', 'index.html');
             this.logger.log(`Loading html file from ${htmlPath}`);
-            this.imageView = fs.readFileSync(htmlPath, 'utf-8');
+            this.vueApp = fs.readFileSync(htmlPath, 'utf-8');
             this.logger.log("Html file loaded");
-        }catch (e){
-            this.logger.error("Failed to load html file");
-            this.logger.error(e);
-        }
-
-        try {
-            const htmlPath = this.configService.get<string>(CONSTANTS.CONFIG_KEYS.GENERAL.NOT_FOUND_HTML) ?? join(__dirname, '..', 'static', '404.html');
-            this.logger.log(`Loading html file from ${htmlPath}`);
-            this.notFoundHtml = fs.readFileSync(htmlPath, 'utf-8');
-            this.logger.log("Not found Html file loaded");
         }catch (e){
             this.logger.error("Failed to load html file");
             this.logger.error(e);
@@ -52,10 +40,10 @@ export class StaticController {
             params.id,
         )}`;
 
-        if(!this.imageView)
+        if(!this.vueApp)
             throw new NotFoundException();
 
-        const $ = cheerio.load(this.imageView);
+        const $ = cheerio.load(this.vueApp);
         // $('meta[property="og:title"]').attr('content', pageData.title);
         // $('meta[name="description"]').attr('content', pageData.description);
         // $('meta[property="og:description"]').attr('content', pageData.description);
@@ -67,7 +55,7 @@ export class StaticController {
 
     @Get()
     async serve404(@Res() res: Response){
-        res.send(this.notFoundHtml ?? "Not found");
+        res.send(this.vueApp ?? "Not found");
     }
 
 }

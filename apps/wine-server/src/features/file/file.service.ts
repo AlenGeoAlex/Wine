@@ -56,7 +56,7 @@ export class FileService {
     public async getUpload(id: string, options? : IServiceOptions) : Promise<Upload | undefined> {
         const db = options?.trx ?? this.databaseService.getDb();
         return await db.selectFrom('upload')
-            .where('id', '=', id)
+            .where('id', '=', id.toUpperCase())
             .selectAll()
             .executeTakeFirst();
     }

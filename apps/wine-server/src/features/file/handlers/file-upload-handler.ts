@@ -78,7 +78,7 @@ export class FileUploadHandler implements ICommandHandler<FileUploadCommand, Fil
         const fileKey = upload.fileKey;
         const fileKeyParts = fileKey.split("/");
         const fileName = fileKeyParts.pop()!;
-        const response = await this.fileSaverProvider.uploadFile("", fileName, params.buffer);
+        const response = await this.fileSaverProvider.uploadFile(fileKeyParts, fileName, params.buffer);
         this.logger.log(`Uploaded file ${fileKey} to ${response}`);
 
         await this.fileService.updateUploadStatus(upload.id, {

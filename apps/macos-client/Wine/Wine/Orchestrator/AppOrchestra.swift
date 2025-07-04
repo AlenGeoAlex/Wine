@@ -56,7 +56,7 @@ class AppOrchestra : ObservableObject {
                     return
                 }
                 
-                previewOverlayService.showOverlay(with: CapturedFile(
+                previewOverlayService.showPreview(with: CapturedFile(
                     fileContent: finalUrl, type: .png, captureType: .screenshot
                 ))
                 logger.info("Showing overlay")

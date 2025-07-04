@@ -12,6 +12,9 @@ export interface UploadTable {
     userId: ColumnType<string, string, never>
     extension: ColumnType<string, string, never>
     expiration: ColumnType<Date | undefined, Date | string | undefined, Date | string | undefined>
+
+    // 2025-07-03
+    secretHash: ColumnType<string | null, string | undefined, string | undefined>
 }
 
 export type Upload = Selectable<UploadTable>

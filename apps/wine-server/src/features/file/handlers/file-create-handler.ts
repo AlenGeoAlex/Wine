@@ -6,7 +6,8 @@ import {ClsService} from "nestjs-cls";
 import {CONSTANTS} from "@common/constants";
 import {ConfigService} from "@nestjs/config";
 import {StorageProvider} from "@common/enums";
-import {IsNotEmpty, Min} from "class-validator";
+import {IsNotEmpty, IsOptional, Min, MinLength} from "class-validator";
+import {CryptoService} from "@shared/crypto.service";
 
 export class FileCreateResponse implements ICommandResponse{
     id: string
@@ -36,6 +37,10 @@ export class FileCreateRequest implements ICommandRequest<FileCreateResponse>{
     contentType: string
 
     expiration: Date | undefined
+
+    @IsOptional()
+    @MinLength(4, { message: 'Secret must be at least 4 characters long' })
+    secret?: string | undefined;
 }
 
 export class FileCreateError implements IErrorResponse {
@@ -60,6 +65,7 @@ export class FileCreateHandler implements ICommandHandler<FileCreateRequest, Fil
         private readonly databaseService : DatabaseService,
         private readonly fileService : FileService,
         private readonly configService : ConfigService,
+        private readonly cryptoService : CryptoService,
     ) {
     }
 
@@ -78,6 +84,15 @@ export class FileCreateHandler implements ICommandHandler<FileCreateRequest, Fil
                 "Expiration date is in the past"
             )
 
+        let secretHash: string | undefined = undefined;
+        if (params.secret) {
+            // The @MinLength decorator handles this, but an extra check is fine
+            if (params.secret.length < 4) {
+                return new FileCreateError(400, "Secret must be at least 4 characters long");
+            }
+            secretHash = await this.cryptoService.hash(params.secret);
+        }
+
         const transaction = await this.databaseService.transaction();
         try {
 
@@ -92,7 +107,8 @@ export class FileCreateHandler implements ICommandHandler<FileCreateRequest, Fil
                 tags: JSON.stringify(params.tags ?? []),
                 size: params.size,
                 createdAt: new Date(),
-                status: 'created'
+                status: 'created',
+                secretHash: secretHash
             }, {
                 trx: transaction
             })
