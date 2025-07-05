@@ -16,6 +16,10 @@ class OverlayWindowService : NSObject {
     private var overlayWindows : [UUID : PreviewPanel] = [:];
     private var cloudShareWindow : [UUID : NSWindow] = [:];
     
+    private func showCloudShare(with captureFile: CapturedFile){
+        
+    }
+    
     public func showPreview(with captureFile: CapturedFile){
         let previewPanel = PreviewPanel(
             padding: 20, captureFile: captureFile, onClose: {

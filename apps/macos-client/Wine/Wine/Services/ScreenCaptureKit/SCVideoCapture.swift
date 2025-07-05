@@ -11,6 +11,7 @@ import AVFoundation
 import Combine
 import OSLog
 import ScreenCaptureKit
+import FactoryKit
 
 @available(macOS 15.0, *)
 class SCVideoCapture : NSObject, ObservableObject, SCContentSharingPickerObserver {
@@ -49,8 +50,11 @@ class SCVideoCapture : NSObject, ObservableObject, SCContentSharingPickerObserve
             session?.updateFilter(filter: filter);
         }else{
             session = ScreenCaptureSession(contentFiler: filter, streamConfiguration: self.streamConfiguration ?? StreamConfiguration(), onFileReady: {
-                event in
-                print("File has been ready at \(event.description)")
+                (event, url) in
+                print("File has been ready at \(event.recordedFileSize)")
+                Task {
+                    await Container.shared.screenshotOrchestra.resolve().completeVideoSnip(url: url)
+                }
             });
             session?.start();
             logger.info("Recording has been told to start")
@@ -71,8 +75,10 @@ class SCVideoCapture : NSObject, ObservableObject, SCContentSharingPickerObserve
         session?.stop();
         self.isRecording = false;
         self.versionId = UUID();
+        contentPicker?.isActive = false;
+        contentPicker?.remove(self);
+        contentPicker = nil
         logger.info("\(self.versionId)")
-
     }
     
     private func setupContentPicker(){
@@ -82,7 +88,7 @@ class SCVideoCapture : NSObject, ObservableObject, SCContentSharingPickerObserve
         
         contentPicker = SCContentSharingPicker.shared;
         var config = SCContentSharingPickerConfiguration();
-        config.allowedPickerModes = .singleDisplay
+        config.allowedPickerModes = [.singleDisplay, .multipleApplications, .multipleWindows]
         config.excludedBundleIDs = [Bundle.main.bundleIdentifier!];
         contentPicker?.maximumStreamCount = 2
         contentPicker?.configuration = config;

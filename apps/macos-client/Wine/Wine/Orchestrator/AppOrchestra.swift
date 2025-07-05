@@ -8,7 +8,7 @@
 import Foundation
 import OSLog
 import FactoryKit
-import AppKit
+@preconcurrency import AppKit
 import ClopSDK
 
 class AppOrchestra : ObservableObject {
@@ -41,30 +41,48 @@ class AppOrchestra : ObservableObject {
                 return;
             }
   
-            let clopUrl = await clopIntegration.run(forContentOf: url)
-            switch clopUrl {
-            case .failure(let error):
-                logger.error("Failed to send to clop \(error)")
-            case .success(let clopResponse):
-                url = clopResponse;
+            let finalUrl = await optimizeFile(url: url);
+
+            guard let _ = NSImage(contentsOf: finalUrl) else {
+                logger.error("Failed to create NSImage from URL: \(finalUrl)")
+                return
             }
-            
-            let finalUrl = url;
-            await MainActor.run {
-                guard let _ = NSImage(contentsOf: finalUrl) else {
-                    logger.error("Failed to create NSImage from URL: \(finalUrl)")
-                    return
-                }
-                
-                previewOverlayService.showPreview(with: CapturedFile(
-                    fileContent: finalUrl, type: .png, captureType: .screenshot
-                ))
-                logger.info("Showing overlay")
-            }
+
+            let capture = CapturedFile(
+                fileContent: finalUrl, type: .png, captureType: .screenshot
+            )
+
+            await preparePreview(capturedFile: capture)
             
             logger.info("URL is \(url)")
         }catch {
             logger.error("Failed to take snip \(error)")
+        }
+    }
+    
+    func completeVideoSnip(url: URL) async -> Void {
+        let finalUrl = await optimizeFile(url: url);
+        let capture = CapturedFile(
+            fileContent: finalUrl, type: .mp4, captureType: .video
+        )
+
+        await preparePreview(capturedFile: capture)
+    }
+    
+    private func preparePreview(capturedFile: CapturedFile) async -> Void{
+        await MainActor.run {
+            previewOverlayService.showPreview(with: capturedFile)
+        }
+    }
+    
+    private func optimizeFile(url: URL) async -> URL {
+        let clopUrl = await clopIntegration.run(forContentOf: url)
+        switch clopUrl {
+        case .failure(let error):
+            logger.error("Failed to send to clop \(error)")
+            return url;
+        case .success(let clopResponse):
+            return clopResponse;
         }
     }
     

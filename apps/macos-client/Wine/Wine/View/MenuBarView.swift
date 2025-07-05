@@ -19,7 +19,7 @@ struct MenuBarViewOS15 : Scene {
     @Environment(\.openWindow) var openWindow
     
     var body: some Scene {
-        MenuBarExtra(AppConstants.appName, systemImage: "rainbow"){
+        MenuBarExtra(AppConstants.appName, systemImage: "camera.filters"){
             Group{
                 Button(BindableAction.quickSnip.name){
                     Task {
@@ -98,7 +98,7 @@ struct MenuBarViewLegacy : Scene {
     @Environment(\.openWindow) var openWindow
     
     var body: some Scene {
-        MenuBarExtra(AppConstants.appName, systemImage: "rainbow"){
+        MenuBarExtra(AppConstants.appName, systemImage: "camera.filters"){
             Group{
                 Button(BindableAction.quickSnip.name){
                     Task {

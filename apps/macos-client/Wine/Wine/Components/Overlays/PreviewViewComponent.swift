@@ -9,8 +9,7 @@ import SwiftUI
 import FactoryKit
 import OSLog
 
-// MARK: - Processing State Enum
-// To manage the different background tasks and their UI feedback.
+// MARK: - Processing State Enum (No changes needed)
 enum ProcessingState: Equatable {
     case none
     case copying
@@ -72,7 +71,7 @@ struct PreviewViewComponent: View {
     
     let uploadContent: CapturedFile;
     let onClose: () -> Void
-    let logger : Logger = Logger(subsystem: AppConstants.reversedDomain, category: "PreviewViewComponent")
+    let logger : Logger
     let isInInteraction: (Bool) -> Void
     
     @InjectedObject(\.settingsService) private var settingsService : SettingsService
@@ -80,21 +79,14 @@ struct PreviewViewComponent: View {
     @State private var isHovering = false
     @State private var isShareLinkHovering = false
     
-    // MARK: - New State for Processing
     @State private var processingState: ProcessingState = .none
-    
-    private var loadedImage: Image? {
-        guard let data = try? Data(contentsOf: uploadContent.fileContent),
-              let nsImage = NSImage(data: data) else {
-            return nil
-        }
-        return Image(nsImage: nsImage)
-    }
+    @State private var loadedImage: Image? = nil
     
     init(uploadContent: CapturedFile, onClose: @escaping () -> Void, isInInteraction: @escaping (Bool) -> Void) {
         self.uploadContent = uploadContent
         self.onClose = onClose
         self.isInInteraction  = isInInteraction
+        self.logger = Logger(subsystem: AppConstants.reversedDomain, category: "PreviewViewComponent")
     }
     
     var body: some View {
@@ -104,110 +96,120 @@ struct PreviewViewComponent: View {
             
             processingOverlay()
         }
+        .task {
+            if let imageWrapper = await uploadContent.getThumbnailImage() {
+                let nsImage = imageWrapper.image
+                self.loadedImage = Image(nsImage: nsImage)
+            }
+        }
     }
     
     // MARK: - UI Components
-    
-    var previewComponent : some View {
-        VStack(spacing: 16) {
-            ZStack(alignment: .bottom) {
-                if let image = loadedImage {
-                    image
-                        .resizable()
-                        .scaledToFit()
-                } else {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(.gray.opacity(0.3))
-                        Image(systemName: "photo.fill")
-                            .font(.largeTitle)
-                            .opacity(0.5)
+
+    /// The overlay containing the action buttons.
+    private var actionButtonsOverlay: some View {
+        VStack {
+            Spacer()
+            HStack(spacing: 4) {
+                ShareLink(item: self.uploadContent.fileContent) {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.system(size: 20))
+                        .foregroundColor(isShareLinkHovering ? .blue : .primary)
+                        .frame(width: 40, height: 40)
+                        .scaleEffect(isShareLinkHovering ? 1.15 : 1.0)
+                }
+                    .buttonStyle(.plain)
+                    .onAppear(){ isInInteraction(true) }
+                    .onDisappear(){ isInInteraction(false) }
+                    .onHover { hovering in withAnimation(.easeInOut(duration: 0.15)) { self.isShareLinkHovering = hovering } }
+                
+                ActionButton(iconName: "pencil.tip.crop.circle", isInInteraction: self.isInInteraction, hoverColor: .orange) { /* Edit action */ }
+                
+                ActionButton(iconName: "document.on.document",isInInteraction: self.isInInteraction, hoverColor: .cyan) {
+                    Task {
+                        self.processingState = .copying
+                        try? await Task.sleep(for: .milliseconds(300))
+                        ClipboardHelper.copyFileToClipboard(fileURL: uploadContent.fileContent)
+                        self.processingState = .none
                     }
                 }
                 
-                if isHovering {
-                    HStack(spacing: 4) {
-                        ShareLink(item: self.uploadContent.fileContent) {
-                            Image(systemName: "square.and.arrow.up")
-                                .font(.system(size: 20))
-                                .foregroundColor(isShareLinkHovering ? .blue : .primary)
-                                .frame(width: 40, height: 40)
-                                .scaleEffect(isShareLinkHovering ? 1.15 : 1.0)
-                        }
-                        .buttonStyle(.plain)
-                        .onAppear(){ isInInteraction(true) }
-                        .onDisappear(){ isInInteraction(false) }
-                        .onHover { hovering in
-                            withAnimation(.easeInOut(duration: 0.15)) {
-                                self.isShareLinkHovering = hovering
-                            }
-                        }
-                        
-                        ActionButton(iconName: "pencil.tip.crop.circle", isInInteraction: self.isInInteraction, hoverColor: .orange  ) { /* Edit action */ }
-                        
-                        ActionButton(iconName: "document.on.document",isInInteraction: self.isInInteraction, hoverColor: .cyan) {
-                            Task {
-                                self.processingState = .copying
-                                try? await Task.sleep(for: .milliseconds(300))
-                                ClipboardHelper.copyFileToClipboard(fileURL: uploadContent.fileContent)
-                                self.processingState = .none
-                            }
-                        }
-                        
-                        if self.settingsService.uploadSettings.type != .none {
-                            ActionButton(iconName: "icloud.and.arrow.up", isInInteraction: self.isInInteraction, hoverColor: .blue) {
-                                Task {
-                                    self.processingState = .uploading
-                                    self.isInInteraction(true);
-                                    let response = await self.screenshotOrchestra.tryUpload(capturedFile: self.uploadContent)
-                                    try? await Task.sleep(for: .seconds(3))
-                                    var isSuccess : Bool = false;
-                                    switch response {
-                                        case .success:
-                                        isSuccess = true;
-                                        self.processingState = .linkCopied
-                                    case .failure:
-                                        self.processingState = .failedUploading
-                                    }
-    
-                                    try? await Task.sleep(for: .seconds(3))
-                                    self.isInInteraction(false);
-                                    if isSuccess {
-                                        onClose()
-                                    }
-                                }
-                            }
-                        }
-                        
-                        ActionButton(iconName: "trash", isInInteraction: { _ in}, hoverColor: .red) {
-                            Task {
-                                self.processingState = .deleting
-                                try? await Task.sleep(for: .milliseconds(300))
-                                let fileDeleteResult = FileHelpers.delete(file: uploadContent.fileContent)
-                                switch fileDeleteResult {
+                if self.settingsService.uploadSettings.type != .none {
+                    ActionButton(iconName: "icloud.and.arrow.up", isInInteraction: self.isInInteraction, hoverColor: .blue) {
+                        Task {
+                            self.processingState = .uploading
+                            self.isInInteraction(true);
+                            let response = await self.screenshotOrchestra.tryUpload(capturedFile: self.uploadContent)
+                            try? await Task.sleep(for: .seconds(3))
+                            var isSuccess: Bool = false
+                            switch response {
                                 case .success:
-                                    self.logger.log("File deleted successfully \(uploadContent.fileContent.path)")
-                                case .failure(let error):
-                                    self.processingState = .failedDeleting
-                                    try? await Task.sleep(for: .seconds(3))
-                                    self.logger.log("Failed to delete file: \(error)")
-                                }
-                                self.processingState = .none
-                                onClose();
+                                isSuccess = true
+                                self.processingState = .linkCopied
+                            case .failure:
+                                self.processingState = .failedUploading
                             }
-                        }
-                        
-                        ActionButton(iconName: "xmark.circle", isInInteraction: { _ in}, hoverColor: .purple) {
-                            onClose();
+                            
+                            try? await Task.sleep(for: .seconds(3))
+                            self.isInInteraction(false);
+                            if isSuccess { onClose() }
                         }
                     }
-                    .padding(6)
-                    .padding(.bottom, 5)
-                    .transition(.opacity.animation(.easeInOut(duration: 0.2)))
+                }
+                
+                ActionButton(iconName: "trash", isInInteraction: { _ in}, hoverColor: .red) {
+                    Task {
+                        self.processingState = .deleting
+                        try? await Task.sleep(for: .milliseconds(300))
+                        let fileDeleteResult = FileHelpers.delete(file: uploadContent.fileContent)
+                        if case .failure(let error) = fileDeleteResult {
+                            self.processingState = .failedDeleting
+                            try? await Task.sleep(for: .seconds(3))
+                            self.logger.log("Failed to delete file: \(error)")
+                        }
+                        self.processingState = .none
+                        onClose()
+                    }
+                }
+                
+                ActionButton(iconName: "xmark.circle", isInInteraction: { _ in}, hoverColor: .purple) { onClose() }
+            }
+            .padding(6)
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .padding(.bottom, 8)
+        }
+        .transition(.opacity.animation(.easeInOut))
+    }
+    
+    // --- THIS IS THE CORRECTED LAYOUT ---
+    var previewComponent : some View {
+        VStack(spacing: 16) {
+            // 1. This ZStack is our main image container.
+            ZStack {
+                // 2. We give it a "greedy" background. A Color or Shape will expand
+                //    to fill the entire frame proposed by its parent.
+                //    This FORCES the ZStack to be 300x300.
+                Color.clear // A transparent, greedy background.
+
+                // 3. Now, we place the content on top of this greedy background.
+                if let image = loadedImage {
+                    image
+                        .resizable()
+                        .scaledToFit() // This will now fit inside the guaranteed 300x300 space.
+                } else {
+                    // The placeholder will also be centered in the 300x300 space.
+                    ProgressView()
                 }
             }
-            .frame(maxWidth: 300, maxHeight: 300)
+            // 4. We apply a single, definitive frame to the container.
+            .frame(width: 300, height: 300)
             .clipShape(RoundedRectangle(cornerRadius: 12))
+            // 5. The buttons are placed in an overlay so they don't affect layout.
+            .overlay {
+                if isHovering {
+                    actionButtonsOverlay
+                }
+            }
             .onHover { hovering in
                 withAnimation(.easeInOut(duration: 0.2)) {
                     self.isHovering = hovering && self.processingState == .none
@@ -219,33 +221,19 @@ struct PreviewViewComponent: View {
         .frame(width: 300)
     }
 
-    // MARK: - New Processing Overlay View
     @ViewBuilder
     private func processingOverlay() -> some View {
+        // This component remains unchanged.
         if processingState != .none {
             ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(.background.opacity(0.7))
-                    .background(.thinMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-
+                RoundedRectangle(cornerRadius: 12).fill(.background.opacity(0.7)).background(.thinMaterial).clipShape(RoundedRectangle(cornerRadius: 12))
                 VStack(spacing: 15) {
-                    if processingState.isProgress {
-                        ProgressView()
-                            .controlSize(.large)
-                    } else if processingState.isError {
-                        Image(systemName: "exclamationmark.triangle")
-                            .controlSize(.large)
-                    } else {
-                        
-                    }
-                    
-                    Text(processingState.message)
-                        .font(.headline)
-                        .foregroundColor(.secondary)
+                    if processingState.isProgress { ProgressView().controlSize(.large) }
+                    else if processingState.isError { Image(systemName: "exclamationmark.triangle").font(.largeTitle) }
+                    Text(processingState.message).font(.headline).foregroundColor(.secondary)
                 }
             }
-            .frame(width: 300)
+            .frame(maxWidth: 300)
             .transition(.opacity.animation(.easeInOut))
         }
     }
@@ -270,24 +258,11 @@ struct ActionButton: View {
     }
 
     var body: some View {
-        Button(action: action) {
-            Image(systemName: iconName)
-        }
-        .buttonStyle(PlainActionButtonStyle(
-            isHovering: isHovering,
-            normalColor: normalColor,
-            hoverColor: hoverColor
-        ))
-        .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.15)) {
-                self.isHovering = hovering
-            }
-        }.onAppear(){
-            isInInteraction(true)
-        }
-        .onDisappear(){
-            isInInteraction(false)
-        }
+        Button(action: action) { Image(systemName: iconName) }
+            .buttonStyle(PlainActionButtonStyle(isHovering: isHovering, normalColor: normalColor, hoverColor: hoverColor))
+            .onHover { hovering in withAnimation(.easeInOut(duration: 0.15)) { self.isHovering = hovering } }
+            .onAppear(){ isInInteraction(true) }
+            .onDisappear(){ isInInteraction(false) }
     }
 }
 
@@ -298,9 +273,9 @@ struct PlainActionButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 16))
+            .font(.system(size: 20))
             .foregroundColor(isHovering ? hoverColor : normalColor)
-            .frame(width: 36, height: 36)
+            .frame(width: 40, height: 40)
             .scaleEffect(isHovering ? 1.15 : 1.0)
             .contentShape(Rectangle())
     }

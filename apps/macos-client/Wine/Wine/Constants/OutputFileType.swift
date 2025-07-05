@@ -7,6 +7,7 @@
 enum OutputFileType : Identifiable, Codable, Equatable, Hashable, CaseIterable {
     case png
     case jpeg
+    case mp4
     
     var fileExtension: String {
         switch self {
@@ -14,6 +15,8 @@ enum OutputFileType : Identifiable, Codable, Equatable, Hashable, CaseIterable {
             return "png"
         case .jpeg:
             return "jpg"
+        case .mp4:
+            return "mp4"
         }
     }
     
@@ -23,6 +26,8 @@ enum OutputFileType : Identifiable, Codable, Equatable, Hashable, CaseIterable {
             return "jpeg"
         case .png:
             return "png"
+        case .mp4:
+            return "mp4"
         }
     }
     
@@ -32,6 +37,8 @@ enum OutputFileType : Identifiable, Codable, Equatable, Hashable, CaseIterable {
             return "image/jpeg"
         case .png:
             return "image/png"
+        case .mp4:
+            return "video/mp4"
         }
     }
     

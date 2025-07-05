@@ -101,8 +101,8 @@ class FileUploadApiService {
         urlRequest.setValue("Token \(settings.secureToken)", forHTTPHeaderField: "Authorization");
         urlRequest.setValue("Wine-MacOS", forHTTPHeaderField: "User-Agent")
         
-        let fileName = capturedFile.fileName
-        let mimeType = capturedFile.mimeType
+        let fileName = await capturedFile.fileName
+        let mimeType = await capturedFile.mimeType
         
         var data = Data()
         

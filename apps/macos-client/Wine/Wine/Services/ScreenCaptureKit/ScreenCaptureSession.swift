@@ -28,12 +28,12 @@ class ScreenCaptureSession : NSObject, SCStreamDelegate, SCRecordingOutputDelega
     
     var started : Bool = false;
     
-    let onFileReady : (SCRecordingOutput) -> Void
+    let onFileReady : (SCRecordingOutput, URL) -> Void
     
-    init(contentFiler: SCContentFilter, streamConfiguration: StreamConfiguration, onFileReady: @escaping (SCRecordingOutput) -> Void){
+    init(contentFiler: SCContentFilter, streamConfiguration: StreamConfiguration, onFileReady: @escaping (SCRecordingOutput, URL) -> Void){
         self.contentFilter = contentFiler
         self.streamConfiguration = streamConfiguration
-        self.outputURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).mp4")
+        self.outputURL = FileManager.default.temporaryDirectory.appendingPathComponent(AppConstants.FolderStructureDateFormatter.string(from: Date())).appendingPathComponent("\(UUID().uuidString).mp4")
         logger.info("Output URL is \(self.outputURL)")
         self.onFileReady = onFileReady
     }
@@ -60,26 +60,21 @@ class ScreenCaptureSession : NSObject, SCStreamDelegate, SCRecordingOutputDelega
     }
     
     func stop(){
-        do {
-            if(!started)
-            {
-                logger.warning("Try to stop the screen capture session that is not started")
-                return;
-            }
-            
-            if(self.scStream == nil)
-            {
-                logger.error("Failed to stop the screen capture sesion: SCStream is nil")
-                return;
-            }
-            
-            if(self.scRecordingOutput != nil){
-                try self.scStream!.removeRecordingOutput(self.scRecordingOutput!);
-            }
-            self.scStream!.stopCapture();
-        }catch {
-            logger.error("Failed to stop the screen capture sesion: \(error)")
+        if(!started)
+        {
+            logger.warning("Try to stop the screen capture session that is not started")
+            return;
         }
+        
+        if(self.scStream == nil)
+        {
+            logger.error("Failed to stop the screen capture sesion: SCStream is nil")
+            return;
+        }
+        
+
+        self.scStream!.stopCapture();
+        logger.info("Screen capture complete")
     }
     
     private func prepareSCStreamConfiguration() -> SCStreamConfiguration {
@@ -136,9 +131,12 @@ class ScreenCaptureSession : NSObject, SCStreamDelegate, SCRecordingOutputDelega
         }
     }
     
+    func recordingOutput(_ recordingOutput: SCRecordingOutput, didFailWithError error: Error) {
+        logger.error("Recording failed with error: \(error)")
+    }
+    
     func recordingOutputDidFinishRecording(_ recordingOutput: SCRecordingOutput) {
-        logger.info("Recording finished")
-        logger.info("\(recordingOutput.description)")
+        onFileReady(recordingOutput, self.outputURL)
     }
     
     deinit {
