@@ -46,12 +46,20 @@ class SCVideoCapture : NSObject, ObservableObject, SCContentSharingPickerObserve
     
     @MainActor
     private func startRecording(filter: SCContentFilter){
+        if isRecording{
+            return
+        }
+
         if(session != nil){
             session?.updateFilter(filter: filter);
         }else{
             session = ScreenCaptureSession(contentFiler: filter, streamConfiguration: self.streamConfiguration ?? StreamConfiguration(), onFileReady: {
                 (event, url) in
-                print("File has been ready at \(event.recordedFileSize)")
+                self.logger.info("File has been ready at \(event.recordedFileSize)")
+                Task { @MainActor in
+                    self.isRecording = false;
+                    self.session = nil
+                }
                 Task {
                     await Container.shared.screenshotOrchestra.resolve().completeVideoSnip(url: url)
                 }
@@ -73,7 +81,6 @@ class SCVideoCapture : NSObject, ObservableObject, SCContentSharingPickerObserve
         }
         
         session?.stop();
-        self.isRecording = false;
         self.versionId = UUID();
         contentPicker?.isActive = false;
         contentPicker?.remove(self);

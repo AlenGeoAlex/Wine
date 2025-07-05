@@ -19,6 +19,7 @@ const router = useRouter();
 const fileInfo = ref<IFileInfoResponse>();
 const secret = ref<string>("");
 const contentUrl = ref<string | null>(null);
+const isUnlocked = ref(false);
 const isLoading = ref(true);
 const openSecretDialog = ref(false);
 
@@ -31,36 +32,38 @@ function openSecretDialogHandler() {
 
 async function handlePassword(password: string) {
   secret.value = password;
-  await getContent();
+  await unlockContent();
 }
 
-async function getContent() {
+async function unlockContent() {
   isLoading.value = true;
-  contentUrl.value = null; // Clear previous content
+  contentUrl.value = null;
+  isUnlocked.value = false;
 
   const id = route.params.id as string;
 
-  try {
-
-    const contentResponse = await FileApiService.getContent(id, secret.value);
-
+  if (isImage.value) {
+    const contentResponse = await FileApiService.getContentAsBlobUrl(id, secret.value);
     if (contentResponse.success && contentResponse.response?.content) {
-      contentUrl.value = contentResponse.response.content; // Assuming it returns a direct URL or blob URL
-      openSecretDialog.value = false;
-      if(fileInfo.value?.secure)
-        toast.success("Content unlocked!");
+      contentUrl.value = contentResponse.response.content;
+      isUnlocked.value = true;
     } else {
-      toast.error(contentResponse.error ?? "Failed to load content. The password might be incorrect.");
+      toast.error(contentResponse.error ?? "Failed to load image. The password might be incorrect.");
       secret.value = "";
     }
-
-  } catch (e: any) {
-    toast.error(e.message ?? "An error occurred while fetching content.");
-  } finally {
-    isLoading.value = false;
+  } else if (isVideo.value) {
+    isUnlocked.value = true;
+  } else {
+    toast.info("This file type cannot be previewed.");
   }
-}
 
+  if (isUnlocked.value) {
+    openSecretDialog.value = false;
+    if(fileInfo.value?.secure) toast.success("Content unlocked!");
+  }
+
+  isLoading.value = false;
+}
 onMounted(async () => {
   const id = route.params.id as string;
   if (!id) {
@@ -75,25 +78,20 @@ onMounted(async () => {
     });
     setTimeout(() => router.push({ path: '/' }), 5000);
     return;
-  }
-  fileInfo.value = info.response!;
+  }  fileInfo.value = info.response!;
 
   if (fileInfo.value.secure) {
     isLoading.value = false;
-    openSecretDialog.value = false;
   } else {
-    await getContent();
+    secret.value = "";
+    await unlockContent();
   }
 });
 </script>
 
 <template>
   <div class="flex flex-col w-full h-full ">
-    <FileNavbar
-      :name="fileInfo?.name"
-      :size="fileInfo?.size"
-      :expires-at="fileInfo?.expiration?.toString()"
-    />
+    <FileNavbar :name="fileInfo?.name" :size="fileInfo?.size" :expires-at="fileInfo?.expiration?.toString()" />
 
     <main class="flex-grow flex items-center justify-center w-full h-full">
       <div v-if="isLoading" class="flex items-center gap-2">
@@ -101,19 +99,33 @@ onMounted(async () => {
         <span class="text-muted-foreground">Loading content...</span>
       </div>
 
-      <template v-else>
+      <template v-else-if="fileInfo">
+        <!-- If it's an unlocked image -->
         <ImageViewer
-          c
-          v-if="contentUrl && isImage"
+          v-if="isImage && isUnlocked && contentUrl"
           :src="contentUrl"
-          :alt="fileInfo?.name"
+          :alt="fileInfo.name"
         />
-        <div v-else-if="!contentUrl" class="text-center text-muted-foreground">
+        <!-- If it's an unlocked video -->
+        <VideoPlayer
+          v-else-if="isVideo && isUnlocked"
+          :file-id="fileInfo.id"
+          :secret="secret"
+          :content-type="fileInfo.contentType"
+          :key="fileInfo.id"
+        />
+
+        <!-- If it's secure and not yet unlocked -->
+        <LockedContent
+          v-else-if="fileInfo.secure && !isUnlocked"
+          @unlock="openSecretDialogHandler"
+        />
+
+        <!-- Fallback for unsupported types -->
+        <div v-else-if="!isImage && !isVideo" class="text-center text-muted-foreground">
           <p>This file type is not supported for direct preview.</p>
-          <p class="text-sm">Try downloading the file instead.</p>
         </div>
       </template>
-
     </main>
 
     <SecretDialogComponent
@@ -124,7 +136,3 @@ onMounted(async () => {
     />
   </div>
 </template>
-
-<style scoped>
-/* Scoped styles if you need any */
-</style>

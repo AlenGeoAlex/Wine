@@ -11,8 +11,8 @@ import * as path from 'path';
 export class FileContentResponse implements ICommandResponse {
     filePath?: string;
     redirect?: string;
-    contentType?: string;
-    fileName?: string
+    contentType: string;
+    fileName: string
 
     constructor(filePath?: string, redirect?: string) {
         this.filePath = filePath;

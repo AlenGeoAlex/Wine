@@ -21,7 +21,8 @@ import {CustomFileInterceptor} from "@/interceptor/custom-file.interceptor";
 import {FileUploadCommand, FileUploadHandler} from "@features/file/handlers/file-upload-handler";
 import {FileContentHandler, FileContentCommand} from "@features/file/handlers/file-content-handler.service";
 import {FileInfoCommand, FileInfoHandler} from "@features/file/handlers/file-info-handler";
-import {createReadStream} from "node:fs";
+import {createReadStream, statSync} from "node:fs";
+import {statfsSync} from "fs";
 
 
 @Controller('api/v1/file')
@@ -51,7 +52,7 @@ export class FileController {
 
 
     @Get(':id/content')
-    public async get(@Param('id') id: string, @Res() res: Response, @Req() req: Request): Promise<void> {
+    public async get(@Param('id') id: string, @Res() res: Response, @Req() req: Request) {
         if (!id || id.trim().length === 0) {
             throw new BadRequestException("Id is required");
         }
@@ -63,17 +64,49 @@ export class FileController {
             return res.redirect(getResponse.redirect);
         }
 
-        if (getResponse.filePath) {
-            try {
-                const fileStream = createReadStream(getResponse.filePath);
-                res.setHeader('Content-Type', 'image/png');
-                res.setHeader('Content-Disposition', `inline; filename="${id}.png"`);
-                fileStream.pipe(res);
-            } catch (e) {
-                throw new NotFoundException(e.message);
-            }
-        } else {
+        if (!getResponse.filePath) {
             throw new NotFoundException();
+        }
+
+        try {
+            const stat = statSync(getResponse.filePath); // ✅ actual file size
+            const fileSize = stat.size;
+            const range = req.headers["range"];
+
+            if (range) {
+                // Example: "bytes=0-"
+                const parts = range.replace(/bytes=/, '').split('-');
+                const start = parseInt(parts[0], 10);
+                const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+
+                if (start >= fileSize || isNaN(start)) {
+                    res.writeHead(416, {
+                        'Content-Range': `bytes */${fileSize}`,
+                    });
+                    return res.end();
+                }
+
+                const chunkSize = (end - start) + 1;
+                const stream = createReadStream(getResponse.filePath, { start, end });
+
+                res.writeHead(206, {
+                    'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+                    'Accept-Ranges': 'bytes',
+                    'Content-Length': chunkSize,
+                    'Content-Type': 'video/mp4',
+                });
+
+                return stream.pipe(res);
+            }
+
+            res.writeHead(200, {
+                'Content-Length': fileSize,
+                'Content-Type': getResponse.contentType,
+            });
+
+            return createReadStream(getResponse.filePath).pipe(res);
+        } catch (e) {
+            throw new NotFoundException(e.message);
         }
     }
 

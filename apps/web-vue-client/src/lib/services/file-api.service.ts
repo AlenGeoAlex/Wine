@@ -3,10 +3,15 @@ import type {IFileContentResponse, IFileInfoResponse} from "@/lib/models/api-dto
 
 export class FileApiService {
 
-    public static async getContent(id: string, secret: string, options? : {}) : Promise<IViewResponse<IFileContentResponse>> {
+    public static async getContentAsBlobUrl(id: string, secret: string, options? : {}) : Promise<IViewResponse<IFileContentResponse>> {
         try {
-            const url = new URL(`/api/v1/file/${id}/content`, window.location.origin)
-            const response = await fetch(url);
+            const headers: HeadersInit = {};
+            if (secret) {
+                headers['x-file-secret'] = secret;
+            }
+
+            const url = `/api/v1/file/${id}/content`;
+            const response = await fetch(url, { headers, redirect: 'follow' })
             if(!response.ok){
                 if(response.status === 404){
                     return {

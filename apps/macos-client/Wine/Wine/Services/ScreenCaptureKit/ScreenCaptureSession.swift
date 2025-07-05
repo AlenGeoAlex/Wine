@@ -74,6 +74,7 @@ class ScreenCaptureSession : NSObject, SCStreamDelegate, SCRecordingOutputDelega
         
 
         self.scStream!.stopCapture();
+        self.scStream = nil;
         logger.info("Screen capture complete")
     }
     

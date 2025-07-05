@@ -1,78 +1,46 @@
 <script setup lang="ts">
-// import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
-// import videojs from 'video.js'
-// import type Player from 'video.js/dist/types/player'
-// import 'video.js/dist/video-js.css'
-//
-// const props = defineProps<{
-//   src: string
-//   // Pass the secret if the backend streams directly and requires a header
-//   secret?: string | null
-// }>()
-//
-// const videoPlayer = ref<HTMLVideoElement | null>(null)
-// let player: Player | null = null
-//
-// // This function modifies the request to add the secret header if needed.
-// // It's a powerful feature of video.js's HTTP streaming (VHS).
-// function initializePlayer() {
-//   if (!videoPlayer.value) return
-//
-//   // If a secret is provided, we configure the request hook
-//   if (props.secret && videojs.Vhs) {
-//     videojs.Vhs.xhr.beforeRequest = (options) => {
-//       options.headers = options.headers || {}
-//       options.headers['X-Secret-Key'] = props.secret!
-//       return options
-//     }
-//   }
-//
-//   const options = {
-//     autoplay: true,
-//     controls: true,
-//     responsive: true,
-//     fluid: true,
-//     sources: [
-//       {
-//         src: props.src,
-//         // The type might need to be dynamic based on fileInfo
-//         type: 'application/x-mpegURL' // for HLS streams
-//         // type: 'video/mp4' // for MP4 files
-//       },
-//     ],
-//   }
-//
-//   player = videojs(videoPlayer.value, options, () => {
-//     console.log('Player is ready')
-//   })
-// }
-//
-// onMounted(() => {
-//   initializePlayer()
-// })
-//
-// onBeforeUnmount(() => {
-//   if (player) {
-//     player.dispose()
-//     player = null
-//   }
-//   // Reset the hook when the component is destroyed
-//   if (videojs.Vhs) {
-//     videojs.Vhs.xhr.beforeRequest = undefined;
-//   }
-// })
-//
-// // Watch for src changes if the component is reused
-// watch(() => props.src, (newSrc) => {
-//   if (player && newSrc) {
-//     player.src({ src: newSrc, type: 'application/x-mpegURL' })
-//   }
-// })
+import { ref, onMounted, onUnmounted } from 'vue';
+import { toast } from 'vue-sonner';
+
+const props = defineProps<{
+  fileId: string;
+  secret?: string;
+}>();
+
+// --- Refs and State ---
+const videoRef = ref<HTMLVideoElement | null>(null);
+const baseUrl = new URL(`/api/v1/file/${props.fileId}/content`, window.location.origin);
+
+let currentStart = 0;
+const chunkSize = 1 * 1024 * 1024; // 1 MB chunks
+let fileSize = 0;
+
+onMounted(() => {
+  if (!videoRef.value) {
+    console.error("Video element not found on mount.");
+    return;
+  }
+
+  if (!('MediaSource' in window)) {
+    toast.error("Your browser does not support Media Source Extensions.");
+    return;
+  }
+
+  videoRef.value.addEventListener('error', () => console.error('Video Element Error:', videoRef.value?.error));
+  videoRef.value.addEventListener('waiting', () => console.log('... Video player is waiting for more data ...'));
+  videoRef.value.addEventListener('playing', () => console.log('▶️ Video is playing.'));
+
+  videoRef.value.src = baseUrl.toString();
+});
+
 
 </script>
 
 <template>
-<!--  <div class="w-full h-full flex items-center justify-center p-4">-->
-<!--    <video ref="videoPlayer" class="video-js vjs-big-play-centered w-full h-full" />-->
-<!--  </div>-->
+  <video
+    ref="videoRef"
+    controls
+    muted
+    class="rounded-xl w-full h-auto shadow"
+  />
 </template>
