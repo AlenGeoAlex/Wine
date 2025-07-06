@@ -65,9 +65,6 @@ struct MenuBarViewOS15 : Scene {
                 SettingsLink {
                     Text("Settings")
                 }
-                Button("Transfers"){
-                    print("Transfers!")
-                }
                 Button("Quit"){
                     NSApp.terminate(nil)
                 }
@@ -89,60 +86,4 @@ struct MenuBarViewOS15 : Scene {
         return key.swiftUIKeyboardShortcut;
     }
 
-}
-
-struct MenuBarViewLegacy : Scene {
-    
-    @InjectedObject(\.settingsService) private var settingsService
-    @Injected(\.screenshotOrchestra) private var screenshotOrchestra : AppOrchestra;
-    @Environment(\.openWindow) var openWindow
-    
-    var body: some Scene {
-        MenuBarExtra(AppConstants.appName, systemImage: "camera.filters"){
-            Group{
-                Button(BindableAction.quickSnip.name){
-                    Task {
-                        print("Quick Snip!")
-                        await screenshotOrchestra.takeSnip()
-                    }
-                }.keyboardShortcut(getKeyboardShortcut(for: .quickSnip));
-                
-                Button(BindableAction.snip.name){
-                    print("Snip!")
-                }.keyboardShortcut(getKeyboardShortcut(for: .snip));
-                
-                Divider();
-                
-                if #available(macOS 14.0, *) {
-                    SettingsLink {
-                        Text("Settings")
-                    }
-                }
-                else {
-                    Button(action: {
-                        NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
-
-                    }, label: {
-                        Text("Settings")
-                    })
-                }
-                Button("Transfers"){
-                    print("Transfers!")
-                }
-                Button("Quit"){
-                    NSApp.terminate(nil)
-                }
-            }.id(settingsService.appSettings.versionId)
-        }
-        
-        Settings{
-            SettingsView()
-        }
-    }
-    
-    private func getKeyboardShortcut(for action: BindableAction) -> KeyboardShortcut? {
-        let key = settingsService.appSettings.bindings[action, default: .empty];
-        return key.swiftUIKeyboardShortcut;
-    }
-    
 }

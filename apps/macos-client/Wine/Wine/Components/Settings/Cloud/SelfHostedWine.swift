@@ -8,9 +8,9 @@
 import SwiftUI
 import FactoryKit
 
-struct SelfHostedWine: View {
+public struct SelfHostedWine: View {
     
-    @State private var selfhostedWineViewModel : SelfHostedWineViewModel;
+    @StateObject private var selfhostedWineViewModel : SelfHostedWineViewModel = SelfHostedWineViewModel()
     @State private var showingAlertForTest : Bool = false;
     @State private var alertMessageForTest : String? = "";
     @State private var showingAlertForSave : Bool = false;
@@ -18,25 +18,8 @@ struct SelfHostedWine: View {
     
     let settingsService : SettingsService = Container.shared.settingsService.resolve()
     var apiUploadService: FileUploadApiService = Container.shared.fileUploadApi.resolve()
-    
-    init(){
-        selfhostedWineViewModel = SelfHostedWineViewModel(serverAddress: settingsService.uploadSettings.type.wineSettings.serverAddress,
-                                                          secureToken: settingsService.uploadSettings.type.wineSettings.secureToken)
-    }
-    
-    private var urlStringProxy : Binding<String> {
-        return Binding(get: {
-            return self.selfhostedWineViewModel.serverAddress?.absoluteString ?? "";
-        }, set: {
-            guard let urlString = URL(string: $0) else {
-                self.selfhostedWineViewModel.lastServerAddressErrorMessage = "Invalid URL";
-                return
-            }
-            self.selfhostedWineViewModel.serverAddress = urlString;
-        })
-    }
-    
-    var body: some View {
+
+    public var body: some View {
         VStack {
             SettingsGroup {
                 HStack {
@@ -46,7 +29,7 @@ struct SelfHostedWine: View {
                         Text("Valid HTTP(s) url to connect to the self hosted wine server").font(.callout).foregroundColor(.secondary)
                     }
                     Spacer()
-                    TextField("https://wine.example.com", text: urlStringProxy)
+                    TextField("https://wine.example.com", text: $selfhostedWineViewModel.serverAddressString)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .border(selfhostedWineViewModel.lastServerAddressErrorMessage != nil ? Color.red : Color.clear, width: 1)
                         
@@ -55,7 +38,7 @@ struct SelfHostedWine: View {
                 Divider()
                 HStack {
                     Spacer()
-                    Text("The server address is used to connect to the Wine server.")
+                    Text(self.selfhostedWineViewModel.lastServerAddressErrorMessage ?? "The server address is used to connect to the Wine server.")
                 }.padding(.top, 4)
             }
             
@@ -81,7 +64,8 @@ struct SelfHostedWine: View {
                 HStack(alignment: .center, spacing: 20) {
                     Button(action: {
                         Task {
-                            await testConnection()
+                            alertMessageForTest = await selfhostedWineViewModel.testConnection()
+                            showingAlertForTest = true
                         }
                     }, label: {
                         Text("Test").fontWeight(.medium)
@@ -95,9 +79,8 @@ struct SelfHostedWine: View {
                     })
                     
                     Button(action: {
-                        Task {
-                            await saveSettings()
-                        }
+                        alertMessageForSave = selfhostedWineViewModel.saveSettings()
+                        showingAlertForSave = true
                     }, label: {
                         Text("Save").fontWeight(.medium)
                     }).alert(Text(alertMessageForSave != nil ? "Failed to save settings" : "Settings saved"), isPresented: $showingAlertForSave, actions: {
@@ -112,51 +95,5 @@ struct SelfHostedWine: View {
         }
     }
     
-    private func saveSettings() async {
-        guard let url = selfhostedWineViewModel.serverAddress else {
-            showingAlertForSave = true
-            alertMessageForSave = "Server address is required"
-            return;
-        }
-        
-        if selfhostedWineViewModel.secureToken.isEmpty {
-            showingAlertForSave = true
-            alertMessageForSave = "Server address is required"
-            return;
-        }
-        
-        var settings = WineServerSettings();
-        settings.serverAddress = url;
-        settings.secureToken = selfhostedWineViewModel.secureToken;
-        settingsService.uploadSettings.type = .wine(settings)
-        showingAlertForSave = true
-        alertMessageForSave = nil
-    }
     
-    private func testConnection() async -> Bool {
-        guard let url = selfhostedWineViewModel.serverAddress else {
-            return false
-        }
-        
-        let pingResponse = await self.apiUploadService.pingServer(url: url);
-        
-        switch pingResponse {
-        case .success(_):
-            showingAlertForTest = true
-            alertMessageForTest = nil
-            return true;
-        case .failure(let err):
-            showingAlertForTest = true
-            alertMessageForTest = err.localizedDescription
-            return false;
-        }
-    }
-    
-    var disabledTestButton : Bool {
-        return selfhostedWineViewModel.serverAddress == nil;
-    }
-    
-    var disabledSaveButton : Bool {
-        return selfhostedWineViewModel.serverAddress == nil || selfhostedWineViewModel.secureToken != "";
-    }
 }

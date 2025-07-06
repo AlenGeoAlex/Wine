@@ -22,9 +22,8 @@ struct WineApp: App {
         PermissionHelpers.requestNotificationAuthorization();
     }
     
-    // The main body is now very simple and just returns our scene-building property.
     var body: some Scene {
-        sceneContent();
+        MenuBarViewOS15()
         
         if #available(macOS 15.0, *) {
             Window("Recorder Configuration", id: AppConstants.WindowConstants.RecorderWindowConstant) {
@@ -32,17 +31,6 @@ struct WineApp: App {
             }
             .windowResizability(.contentSize)
             .windowStyle(.hiddenTitleBar)
-        }
-    }
-
-    
-    private func sceneContent() -> some Scene {
-        if #available(macOS 15.0, *) {
-            return MenuBarViewOS15()
-        }
-        else
-        {
-            return MenuBarViewLegacy()
         }
     }
 }
