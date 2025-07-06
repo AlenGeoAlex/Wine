@@ -63,9 +63,7 @@ class FileUploadApiService {
                 self.logger.log("\(String(data: data, encoding: .utf8) ?? "No data")")
                 return .failure(UploadServiceError.unknown)
             }
-            
-            print(String(data: data, encoding: .utf8) ?? "No data")
-            
+                        
             do {
                 let decoder = JSONDecoder()
                 decoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601withFractionalSeconds)
