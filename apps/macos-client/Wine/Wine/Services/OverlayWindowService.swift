@@ -16,8 +16,32 @@ class OverlayWindowService : NSObject {
     private var overlayWindows : [UUID : PreviewPanel] = [:];
     private var cloudShareWindow : [UUID : NSWindow] = [:];
     
-    private func showCloudShare(with captureFile: CapturedFile){
+    public func showCloudShare(with captureFile: CapturedFile){
+        let cloudSharePanel = CloudUploadPanel(
+            captureFile: captureFile,
+            onClose: { id in
+                self.closeCloudShare(for: id)
+            },
+            onUpload: {
+                (id, uploadData, captureFile) in
+                
+            }
+        )
         
+        cloudShareWindow[cloudSharePanel.id] = cloudSharePanel
+        cloudSharePanel.makeKeyAndOrderFront(nil)
+        cloudSharePanel.makeKey()
+        logger.info("Showing cloud share window")
+    }
+    
+    public func closeCloudShare(for uuid: UUID){
+        guard let panel = cloudShareWindow[uuid] else {
+            logger.error("Could not find cloud share window for \(uuid)")
+            return
+        }
+        
+        panel.close()
+        cloudShareWindow[uuid] = nil
     }
     
     public func showPreview(with captureFile: CapturedFile){

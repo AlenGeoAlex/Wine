@@ -9,6 +9,7 @@ enum SettingsSidebarPages : String, Identifiable, Hashable, CaseIterable {
     case general = "General"
     case keybinds = "Keybinds"
     case cloudSharing = "Cloud Sharing"
+    case list = "List Uploads"
     case about = "About"
     
     var id : String {return self.rawValue}
@@ -21,6 +22,8 @@ enum SettingsSidebarPages : String, Identifiable, Hashable, CaseIterable {
             return "Control and configure how images are shared through cloud"
         case .keybinds:
             return "Global keybinding settings"
+        case .list:
+            return "List all uploaded images"
         case .about:
             return "About Wine"
         }
@@ -36,6 +39,8 @@ enum SettingsSidebarPages : String, Identifiable, Hashable, CaseIterable {
             return "keyboard"
         case .about:
             return "info.circle"
+        case .list:
+            return "list.bullet.rectangle.portrait"
         }
     }
 }

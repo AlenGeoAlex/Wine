@@ -36,6 +36,50 @@ class FileUploadApiService {
         }
     }
     
+    func listUploads(request: FileListQuery) async -> Result<FileListResponse, Error> {
+        do {
+            let type = await self.settingsService.uploadSettings.type
+            
+            guard case let .wine(settings) = type else {
+                return .failure(UploadServiceError.unknownProvider)
+            }
+            
+            var requestUrl = settings.serverAddress.appending(path: "api/v1/file")
+            requestUrl.append(queryItems: [
+                URLQueryItem(name: "take", value: String(request.take ?? 10)),
+                URLQueryItem(name: "skip", value: String(request.skip ?? 0))
+            ])
+            var httpRequest = URLRequest(url: requestUrl);
+            logger.info("Setting the request url to \(requestUrl)")
+            httpRequest.httpMethod = "GET"
+            httpRequest.setValue("Token \(settings.secureToken)", forHTTPHeaderField: "Authorization");
+            httpRequest.setValue("Wine-MacOS", forHTTPHeaderField: "User-Agent")
+            httpRequest.timeoutInterval = 30
+            
+            let (data, response) = try await URLSession.shared.data(for: httpRequest)
+
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                self.logger.log("Status Code: \((response as? HTTPURLResponse)?.statusCode ?? 0)")
+                self.logger.log("\(String(data: data, encoding: .utf8) ?? "No data")")
+                return .failure(UploadServiceError.unknown)
+            }
+            
+            print(String(data: data, encoding: .utf8) ?? "No data")
+            
+            do {
+                let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601withFractionalSeconds)
+                let listResponse = try decoder.decode(FileListResponse.self, from: data)
+                return .success(listResponse)
+            } catch {
+                return .failure(error)
+            }
+        } catch {
+            logger.error("Failed to list the uploads \(error)")
+            return .failure(error)
+        }
+    }
+    
     
     func createFile(with request: FileUploadRequest) async throws -> FileUploadResponse {
         let type = await self.settingsService.uploadSettings.type
@@ -51,7 +95,7 @@ class FileUploadApiService {
         httpRequest.setValue("application/json", forHTTPHeaderField: "Content-Type");
         httpRequest.setValue("Token \(settings.secureToken)", forHTTPHeaderField: "Authorization");
         httpRequest.setValue("Wine-MacOS", forHTTPHeaderField: "User-Agent")
-        httpRequest.timeoutInterval = 10
+        httpRequest.timeoutInterval = 30
         
         let encoder = JSONEncoder()
         do {

@@ -24,6 +24,8 @@ struct SettingsView: View {
                 CloudSharingSettings()
             case .about:
                 AboutWineSettings()
+            case .list:
+                ListCloudUploads()
             }
         }.frame(width: 800, height: 750) 
     }

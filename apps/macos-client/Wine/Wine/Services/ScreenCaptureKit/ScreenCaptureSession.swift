@@ -94,6 +94,8 @@ class ScreenCaptureSession : NSObject, SCStreamDelegate, SCRecordingOutputDelega
         
         if(streamConfiguration.showCursor){
             config.showsCursor = true;
+            config.showMouseClicks = true;
+            config.pixelFormat = kCVPixelFormatType_32BGRA
         }else{
             config.showsCursor = false;
         }
@@ -110,6 +112,7 @@ class ScreenCaptureSession : NSObject, SCStreamDelegate, SCRecordingOutputDelega
         recordingConfiguration.outputURL = outputURL
         recordingConfiguration.outputFileType = .mp4;
         recordingConfiguration.videoCodecType = .h264
+
         
         let recordingOutput = SCRecordingOutput(configuration: recordingConfiguration, delegate: self)
         return (recordingConfiguration, recordingOutput);

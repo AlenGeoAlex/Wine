@@ -7,6 +7,7 @@ import { FileUploadHandler } from './handlers/file-upload-handler';
 import {SharedModule} from "@shared/shared.module";
 import { FileContentHandler } from './handlers/file-content-handler.service';
 import { FileInfoHandler } from './handlers/file-info-handler';
+import { FileListHandler } from './handlers/file-list-handler';
 
 @Module({
     providers: [
@@ -14,7 +15,8 @@ import { FileInfoHandler } from './handlers/file-info-handler';
         FileCreateHandler,
         FileUploadHandler,
         FileContentHandler,
-        FileInfoHandler
+        FileInfoHandler,
+        FileListHandler
     ],
     controllers: [FileController],
     imports: [

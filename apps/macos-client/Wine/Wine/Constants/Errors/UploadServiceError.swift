@@ -14,4 +14,5 @@ enum UploadServiceError: Error {
     case serverUnreachable
     case unknown
     case unknownHttpError(Error)
+    case failed
 }

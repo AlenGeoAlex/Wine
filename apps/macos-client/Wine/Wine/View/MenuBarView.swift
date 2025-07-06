@@ -120,12 +120,8 @@ struct MenuBarViewLegacy : Scene {
                 }
                 else {
                     Button(action: {
-                        if #available(macOS 13.0, *) {
-                            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-                        }
-                        else {
-                            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
-                        }
+                        NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
+
                     }, label: {
                         Text("Settings")
                     })

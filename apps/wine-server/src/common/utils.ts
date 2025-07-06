@@ -25,3 +25,8 @@ export interface IErrorResponse {
 export interface ICommandHandler<in T extends ICommandRequest<X>, out X extends ICommandResponse | IErrorResponse> {
     executeAsync(params: T): Promise<X>
 }
+
+export interface IPaginatedResponse<T> {
+    items: T[]
+    total: number
+}

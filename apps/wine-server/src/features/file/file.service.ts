@@ -14,6 +14,30 @@ export class FileService {
     ) {
     }
 
+    public async listUploads(userId: string, skip: number = 0, take: number = 50, options?: IServiceOptions) : Promise<{
+        uploads: Upload[],
+        total: number,
+    }> {
+        const db = options?.trx ?? this.databaseService.getDb();
+        const rows = await db.selectFrom('upload')
+            .selectAll('upload')
+            .select(
+                (eb) => eb.fn.countAll().over().as('total_count')
+            )
+            .where('userId', '=', userId)
+            .offset(skip)
+            .limit(take)
+            .orderBy('createdAt', 'desc')
+            .execute();
+
+        const total = rows.length > 0 ? Number((rows[0] as any).total_count) : 0;
+        const uploads = rows.map(({ total_count, ...rest }) => rest as Upload);
+        return {
+            uploads,
+            total,
+        };
+    }
+
     public async createUpload(upload: NewUpload, options?: IServiceOptions) : Promise<{
         id: string,
         fileKey: string,

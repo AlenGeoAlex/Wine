@@ -33,7 +33,7 @@ class AppOrchestra : ObservableObject {
     func takeSnip() async -> Void {
         do {
             let image = try await self.screenshotCapture.captureImageWithSelection();
-            var url = try image.get();
+            let url = try image.get();
             
             logger.info("File has been saved to \(url)")
             guard let _ = NSImage(contentsOf: url) else {
@@ -85,6 +85,17 @@ class AppOrchestra : ObservableObject {
             return clopResponse;
         }
     }
+    
+    private func showUploadConfigPanel(capturedFile: CapturedFile) async -> Void {
+        await MainActor.run {
+            previewOverlayService.showCloudShare(with: capturedFile)
+        }
+    }
+    
+    func upload(capturedFile : CapturedFile, cloudShareOverlay: CloudShareOverlayModel) async -> Void {
+        
+    }
+    
     
     func tryUpload(capturedFile : CapturedFile) async -> Result<Bool, UploadServiceError>  {
         do {

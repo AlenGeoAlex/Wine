@@ -137,22 +137,9 @@ struct PreviewViewComponent: View {
                 if self.settingsService.uploadSettings.type != .none {
                     ActionButton(iconName: "icloud.and.arrow.up", isInInteraction: self.isInInteraction, hoverColor: .blue) {
                         Task {
-                            self.processingState = .uploading
-                            self.isInInteraction(true);
                             let response = await self.screenshotOrchestra.tryUpload(capturedFile: self.uploadContent)
-                            try? await Task.sleep(for: .seconds(3))
-                            var isSuccess: Bool = false
-                            switch response {
-                                case .success:
-                                isSuccess = true
-                                self.processingState = .linkCopied
-                            case .failure:
-                                self.processingState = .failedUploading
-                            }
-                            
-                            try? await Task.sleep(for: .seconds(3))
-                            self.isInInteraction(false);
-                            if isSuccess { onClose() }
+                            self.processingState = .none
+                            onClose()
                         }
                     }
                 }
@@ -181,30 +168,20 @@ struct PreviewViewComponent: View {
         .transition(.opacity.animation(.easeInOut))
     }
     
-    // --- THIS IS THE CORRECTED LAYOUT ---
     var previewComponent : some View {
         VStack(spacing: 16) {
-            // 1. This ZStack is our main image container.
             ZStack {
-                // 2. We give it a "greedy" background. A Color or Shape will expand
-                //    to fill the entire frame proposed by its parent.
-                //    This FORCES the ZStack to be 300x300.
-                Color.clear // A transparent, greedy background.
-
-                // 3. Now, we place the content on top of this greedy background.
+                Color.clear
                 if let image = loadedImage {
                     image
                         .resizable()
-                        .scaledToFit() // This will now fit inside the guaranteed 300x300 space.
+                        .scaledToFit()
                 } else {
-                    // The placeholder will also be centered in the 300x300 space.
                     ProgressView()
                 }
             }
-            // 4. We apply a single, definitive frame to the container.
             .frame(width: 300, height: 300)
             .clipShape(RoundedRectangle(cornerRadius: 12))
-            // 5. The buttons are placed in an overlay so they don't affect layout.
             .overlay {
                 if isHovering {
                     actionButtonsOverlay
@@ -223,7 +200,6 @@ struct PreviewViewComponent: View {
 
     @ViewBuilder
     private func processingOverlay() -> some View {
-        // This component remains unchanged.
         if processingState != .none {
             ZStack {
                 RoundedRectangle(cornerRadius: 12).fill(.background.opacity(0.7)).background(.thinMaterial).clipShape(RoundedRectangle(cornerRadius: 12))

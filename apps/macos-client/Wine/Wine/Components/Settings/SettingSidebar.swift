@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import FactoryKit
 
 struct SettingSidebar: View {
     
+    @Injected(\.settingsService) private var settingsService;
     @Binding private var currentSelectedPage : SettingsSidebarPages;
     
     init(currentSelectedPage: Binding<SettingsSidebarPages>) {
@@ -22,7 +24,9 @@ struct SettingSidebar: View {
                 .padding(.horizontal)
                 .padding(.top)
             
-            List(SettingsSidebarPages.allCases, selection: $currentSelectedPage) {
+            List(
+                getSideBarPages()
+                 , selection: $currentSelectedPage) {
                 page in
                 NavigationLink(value:page) {
                     Label(page.rawValue, systemImage: page.icon)
@@ -41,6 +45,14 @@ struct SettingSidebar: View {
             }
             .padding()
             .frame(maxWidth: .infinity)
+        }
+    }
+    
+    private func getSideBarPages() -> [SettingsSidebarPages] {
+        if case .wine = self.settingsService.uploadSettings.type {
+            return SettingsSidebarPages.allCases
+        } else {
+            return SettingsSidebarPages.allCases.filter { $0 != .list }
         }
     }
 }

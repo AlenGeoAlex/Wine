@@ -61,7 +61,7 @@ actor CapturedFile {
     
     /// Private helper to generate a video thumbnail as an NSImage.
     private func generateVideoThumbnail(at time: TimeInterval) async -> NSImage? {
-        let asset = AVAsset(url: fileContent)
+        let asset = AVURLAsset(url: fileContent)
         let imageGenerator = AVAssetImageGenerator(asset: asset)
         imageGenerator.appliesPreferredTrackTransform = true
         imageGenerator.maximumSize = CGSize(width: 1024, height: 1024)

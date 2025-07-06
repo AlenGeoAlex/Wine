@@ -1,63 +1,45 @@
 import SwiftUI
 
-/// A SwiftUI view that presents sharing options to the user before an upload.
-/// This view is designed to look like the provided screenshot for a macOS app.
-struct SharePopupView: View {
+struct CloudShareOverlay: View {
 
     // MARK: - State Variables
-    // These hold the user's input from the form.
-    @State private var title: String = ""
-    @State private var password: String = ""
-    @State private var linkExpiration: Expiration = .oneHour
-    @State private var publicLinkType: LinkType = .webpage
-    @State private var createLongLink: Bool = false
-
-    // State to manage which text field is focused, to show the cursor as in the screenshot.
-    @FocusState private var isTitleFieldFocused: Bool
     
-    // In a real app, you would pass the actual thumbnail image into this view.
-    // let contentThumbnail: Image
+    @State private var capturedFile: CapturedFile;
+    @State private var cloudShareOverlayModel : CloudShareOverlayModel = CloudShareOverlayModel();
+    @FocusState private var isTitleFieldFocused: Bool
+    @State private var contentThumbnail: Image = Image(systemName: "curlybraces.square");
 
-    // Enums to define the options for the Pickers (dropdowns).
-    // This makes the code cleaner and less error-prone.
-    enum Expiration: String, CaseIterable, Identifiable {
-        case oneHour = "1 hour"
-        case sixHours = "6 hours"
-        case oneDay = "1 day"
-        case oneWeek = "1 week"
-        case never = "Never"
-        var id: Self { self }
+    var onCancel: () -> Void = { }
+    var onShare: (CloudShareOverlayModel, CapturedFile) -> Void = { (_, _) in }
+    
+    init(capturedFile: CapturedFile, onCancel: @escaping () -> Void, onShare: @escaping (CloudShareOverlayModel, CapturedFile) -> Void) {
+        self.capturedFile = capturedFile
+        self.onCancel = onCancel
+        self.onShare = onShare
     }
-
-    enum LinkType: String, CaseIterable, Identifiable {
-        case webpage = "Webpage"
-        case directLink = "Direct link"
-        var id: Self { self }
-    }
-
-    // The main body of the SwiftUI View.
+    
     var body: some View {
-        VStack(spacing: 16) {
-            // 1. Header Section
+        VStack(spacing: 10) {
             headerView
-
-            // 2. Subtitle
-            Text("Choose how you'd like to share your dragged content:")
+            Text("Configure your cloud upload")
                 .foregroundColor(.secondary)
 
-            // 3. Main Content Area (Form and Thumbnail)
             formAndThumbnailView
-
-            // 4. Footer Button Bar
             footerButtonsView
         }
-        .padding(24)
-        .frame(width: 500, height: 350) // Fixed size for a popup window
+        .padding(20)
+        .frame(width: 500, height: 300)
         .background(Color(nsColor: .windowBackgroundColor))
         .cornerRadius(16)
         .onAppear {
-            // Automatically focus the title field when the view appears.
             isTitleFieldFocused = true
+        }.task {
+            if let imageWrapper = await self.capturedFile.getThumbnailImage() {
+                let nsImage = imageWrapper.image
+                self.contentThumbnail = Image(nsImage: nsImage)
+            }
+            let name = await self.capturedFile.fileName;
+            self.cloudShareOverlayModel.fileName = name;
         }
     }
 
@@ -66,12 +48,10 @@ struct SharePopupView: View {
     /// The header containing the title and cloud icon.
     private var headerView: some View {
         HStack {
-            Text("Dropover Cloud")
+            Text("Wine Cloud")
                 .font(.title2)
                 .fontWeight(.semibold)
-            Image(systemName: "cloud")
-                .font(.title2)
-                .foregroundColor(.accentColor)
+                .frame(maxWidth: .infinity, alignment: .center)
             Spacer()
         }
     }
@@ -91,50 +71,54 @@ struct SharePopupView: View {
     private var formFieldsView: some View {
         Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 12, verticalSpacing: 14) {
             GridRow {
-                Text("Title:")
+                Text("Name:")
                     .gridColumnAlignment(.trailing)
-                TextField("Optional", text: $title)
+                TextField("Optional", text: $cloudShareOverlayModel.fileName)
                     .focused($isTitleFieldFocused) // Bind focus state
             }
 
             GridRow {
                 Text("Password:")
-                TextField("Optional", text: $password)
+                TextField("Optional", text: $cloudShareOverlayModel.securePassword)
             }
 
             GridRow {
                 Text("Link expiration")
-                Picker("", selection: $linkExpiration) {
+                Picker("", selection: $cloudShareOverlayModel.expiration) {
                     ForEach(Expiration.allCases) { Text($0.rawValue).tag($0) }
                 }
                 .labelsHidden()
             }
+            
+            GridRow {
+                Text("Tags:")
+                TextField("Optional", text: $cloudShareOverlayModel.tags)
+            }
 
             GridRow {
                 Text("Public link type")
-                Picker("", selection: $publicLinkType) {
+                Picker("", selection: $cloudShareOverlayModel.linkType) {
                     ForEach(LinkType.allCases) { Text($0.rawValue).tag($0) }
                 }
                 .labelsHidden()
             }
             
             // This row is for the checkbox, aligned under the controls.
-            GridRow {
-                Color.clear // An empty view to push the toggle into the second column
-                    .gridCellUnsizedAxes([.horizontal, .vertical])
-                
-                Toggle(isOn: $createLongLink) {
-                    Text("Create long link")
-                }
-                .toggleStyle(.checkbox)
-            }
+//            GridRow {
+//                Color.clear // An empty view to push the toggle into the second column
+//                    .gridCellUnsizedAxes([.horizontal, .vertical])
+//                
+//                Toggle(isOn: $createLongLink) {
+//                    Text("Create long link")
+//                }
+//                .toggleStyle(.checkbox)
+//            }
         }
     }
     
     /// The thumbnail preview of the content to be shared.
     private var thumbnailView: some View {
-        // We use a system image as a placeholder representing code.
-        Image(systemName: "curlybraces.square")
+        self.contentThumbnail
             .resizable()
             .aspectRatio(contentMode: .fit)
             .foregroundColor(.green)
@@ -153,53 +137,17 @@ struct SharePopupView: View {
     /// The footer containing the help, cancel, and share buttons.
     private var footerButtonsView: some View {
         HStack {
-            Button(action: { /* TODO: Show help */ }) {
-                Image(systemName: "questionmark.circle")
-            }
-            .buttonStyle(.plain)
-            .font(.title3)
-            .foregroundColor(.secondary)
-
             Spacer()
 
             Button("Cancel") {
-                // In a real app, this would dismiss the window/view.
-                print("Upload cancelled.")
+                onCancel();
             }
-            .keyboardShortcut(.cancelAction) // Allows Esc key to trigger it
+            .keyboardShortcut(.cancelAction)
 
-            Button("Share") {
-                // This is where you'd trigger your upload logic.
-                // You would pass the state variables to your upload function.
-                print("Sharing with the following settings:")
-                print("- Title: \(title.isEmpty ? "None" : title)")
-                print("- Password: \(password.isEmpty ? "None" : "Set")")
-                print("- Expiration: \(linkExpiration.rawValue)")
-                print("- Link Type: \(publicLinkType.rawValue)")
-                print("- Long Link: \(createLongLink)")
-                
-                // Example of how you might call your upload function:
-                // Task {
-                //     let uploadOptions = UploadOptions(
-                //          title: title, password: password, expiration: linkExpiration, ...
-                //     )
-                //     let result = await tryUpload(capturedFile: yourFile, options: uploadOptions)
-                //     // Handle result...
-                // }
+            Button("Upload") {
+                onShare(self.cloudShareOverlayModel, self.capturedFile);
             }
-            .keyboardShortcut(.defaultAction) // Makes this the primary button (blue)
+            .keyboardShortcut(.defaultAction)
         }
-    }
-}
-
-// MARK: - Xcode Preview
-#Preview {
-    // Wrap the view in a ZStack with a background color to get a nice preview.
-    ZStack {
-        // A typical macOS background color for a window behind the main one.
-        Color(nsColor: .underPageBackgroundColor).edgesIgnoringSafeArea(.all)
-        SharePopupView()
-            // Force dark mode for the preview to match the screenshot.
-            .preferredColorScheme(.dark)
     }
 }
