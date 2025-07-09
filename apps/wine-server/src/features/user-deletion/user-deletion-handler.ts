@@ -46,7 +46,7 @@ export class UserDeletionHandler implements ICommandHandler<UserDeletionCommand,
             await transaction.commit().execute();
             return new UserDeletionResponse();
         }catch (e){
-            transaction.rollback();
+            await transaction.rollback().execute();
             return new UserDeletionError(
                 500,
                 "Failed to delete user",

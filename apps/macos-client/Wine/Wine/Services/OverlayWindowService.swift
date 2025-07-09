@@ -8,6 +8,7 @@
 import Foundation
 import Cocoa
 import OSLog
+import FactoryKit
 
 class OverlayWindowService : NSObject {
     
@@ -21,10 +22,15 @@ class OverlayWindowService : NSObject {
             captureFile: captureFile,
             onClose: { id in
                 self.closeCloudShare(for: id)
+                self.showPreview(with: captureFile)
             },
             onUpload: {
-                (id, uploadData, captureFile) in
-                
+                (id, captureFile, uploadData) in
+                print(id)
+                Task {
+                    print(uploadData.fileName)
+                    await Container.shared.screenshotOrchestra.resolve().upload(capturedFile: captureFile, cloudShareOverlay: uploadData)
+                }
             }
         )
         

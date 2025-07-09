@@ -3,13 +3,14 @@ import {ICommandHandler, ICommandRequest, ICommandResponse, IPaginatedQuery, IPa
 import {FileService} from "@features/file/file.service";
 import {ClsService} from "nestjs-cls";
 import {CONSTANTS} from "@common/constants";
+import {UploadStatus} from "common-models";
 
 export interface File {
     id: string,
     expiration: Date | undefined,
     fileName: string,
     size: number,
-    status: 'created' | 'initiated' | 'uploading' | 'done' | 'cancelled' | 'failed'
+    status: UploadStatus,
     tags: string[]
     contentType: string;
     createdAt: Date;
@@ -40,7 +41,10 @@ export class FileListHandler implements ICommandHandler<FileListQuery, FileListR
         if(!userId){
             throw new BadRequestException("User not found");
         }
-        const fileList = await this.fileService.listUploads(userId, params.skip, params.take);
+        const fileList = await this.fileService.listUploads(userId, {
+            skip: params.skip,
+            take: params.take
+        });
         const fileListResponse = new FileListResponse();
         fileListResponse.total = fileList.total;
         fileListResponse.items = fileList.uploads;

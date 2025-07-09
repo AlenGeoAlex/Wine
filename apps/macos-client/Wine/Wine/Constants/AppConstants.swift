@@ -20,6 +20,12 @@ class AppConstants {
         return formatter
     }()
     
+    public static let ISODateFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
+    
     class WindowConstants {
         static let RecorderWindowConstant = "WineRecorderWindow"
     }

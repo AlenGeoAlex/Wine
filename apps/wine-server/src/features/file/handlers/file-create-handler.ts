@@ -1,5 +1,5 @@
 import {ICommandHandler, ICommandRequest, ICommandResponse, IErrorResponse} from "@common/utils";
-import {Injectable, Logger} from "@nestjs/common";
+import {Injectable, Logger, UnauthorizedException} from "@nestjs/common";
 import {FileService} from "@features/file/file.service";
 import {DatabaseService} from "@db/database";
 import {ClsService} from "nestjs-cls";
@@ -8,6 +8,9 @@ import {ConfigService} from "@nestjs/config";
 import {StorageProvider} from "@common/enums";
 import {IsNotEmpty, IsOptional, Min, MinLength} from "class-validator";
 import {CryptoService} from "@shared/crypto.service";
+import {EventEmitter2} from "@nestjs/event-emitter";
+import {FileCreatedEvent} from "@features/file/events.file";
+import {Type} from "class-transformer";
 
 export class FileCreateResponse implements ICommandResponse{
     id: string
@@ -31,11 +34,14 @@ export class FileCreateRequest implements ICommandRequest<FileCreateResponse>{
     @IsNotEmpty()
     size: number
 
+    @IsOptional()
     tags: string[] = []
 
     @IsNotEmpty()
     contentType: string
 
+    @IsOptional()
+    @Type(() => Date)
     expiration: Date | undefined
 
     @IsOptional()
@@ -66,6 +72,7 @@ export class FileCreateHandler implements ICommandHandler<FileCreateRequest, Fil
         private readonly fileService : FileService,
         private readonly configService : ConfigService,
         private readonly cryptoService : CryptoService,
+        private readonly eventEmitter: EventEmitter2
     ) {
     }
 
@@ -73,10 +80,7 @@ export class FileCreateHandler implements ICommandHandler<FileCreateRequest, Fil
     async executeAsync(params: FileCreateRequest): Promise<FileCreateResponse | FileCreateError> {
         const userId = this.clsService.get(CONSTANTS.MIDDLEWARE_KEYS.API_KEY_USER);
         if(!userId)
-            return new FileCreateError(
-                403,
-                "Unknown user"
-            );
+            throw new UnauthorizedException("Unknown user");
 
         if(params.expiration && params.expiration.getTime() < Date.now())
             return new FileCreateError(
@@ -86,7 +90,6 @@ export class FileCreateHandler implements ICommandHandler<FileCreateRequest, Fil
 
         let secretHash: string | undefined = undefined;
         if (params.secret) {
-            // The @MinLength decorator handles this, but an extra check is fine
             if (params.secret.length < 4) {
                 return new FileCreateError(400, "Secret must be at least 4 characters long");
             }
@@ -108,7 +111,8 @@ export class FileCreateHandler implements ICommandHandler<FileCreateRequest, Fil
                 size: params.size,
                 createdAt: new Date(),
                 status: 'created',
-                secretHash: secretHash
+                secretHash: secretHash,
+                isDeleted: false
             }, {
                 trx: transaction
             })
@@ -119,12 +123,18 @@ export class FileCreateHandler implements ICommandHandler<FileCreateRequest, Fil
             if(storageProvider !== StorageProvider.FS)
                 uploadType = 'presigned';
 
+            this.eventEmitter.emit('file.created', new FileCreatedEvent(
+                fileCreationResponse.id,
+                FileCreateHandler.name,
+                params.secret !== undefined,
+                params.contentType))
+
             return new FileCreateResponse(
                 fileCreationResponse.id,
                 uploadType,
             )
         }catch (e) {
-            transaction.rollback();
+            await transaction.rollback().execute();
             this.logger.error(e);
             return new FileCreateError(
                 500,

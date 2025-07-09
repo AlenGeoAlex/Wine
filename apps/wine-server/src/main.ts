@@ -13,7 +13,18 @@ async function bootstrap() {
     type: VersioningType.URI
   })
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true,
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transformOptions: {
+      enableImplicitConversion: true
+    },
+    validationError: {
+      target: false,
+      value: false
+    }
+  }));
   app.use(
       helmet.contentSecurityPolicy({
         directives: {

@@ -135,7 +135,7 @@ class FileUploadApiService {
             return nil
         }
         
-        let requestUrl = settings.serverAddress.appending(path: "api/v1/file/upload/\(id)")
+        let requestUrl = settings.serverAddress.appending(path: "api/v1/file/\(id)/content")
         let boundary = UUID().uuidString
         var urlRequest = URLRequest(url: requestUrl)
         urlRequest.httpMethod = "POST"

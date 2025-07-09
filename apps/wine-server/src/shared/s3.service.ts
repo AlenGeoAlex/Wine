@@ -15,8 +15,12 @@ export class S3Service {
 
     }
 
-    public async generatePresignedUrl(key: string, expiresIn: number, action: 'GET' | 'POST'): Promise<string> {
+    public async generatePresignedUrl(key: string, expiresIn: number, action: 'GET' | 'POST', contentType?: string,contentLength?: number): Promise<string> {
         const client = await this.getOrCreateClient();
+
+        if(action === "POST" && (!contentType || !contentLength)){
+            throw new Error("Content type and content length are required for POST requests");
+        }
 
         const command = action === 'GET' ? new GetObjectCommand({
             Bucket: CONSTANTS.CONFIG_KEYS.STORAGE.S3.S3_BUCKET,
@@ -24,6 +28,8 @@ export class S3Service {
         }) : new PutObjectCommand({
             Bucket: CONSTANTS.CONFIG_KEYS.STORAGE.S3.S3_BUCKET,
             Key: key,
+            ContentLength: contentLength,
+            ContentType: contentType,
         })
 
         try {

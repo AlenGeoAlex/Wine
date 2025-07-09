@@ -124,7 +124,6 @@ struct CloudShareOverlay: View {
             .foregroundColor(.green)
             .padding()
             .frame(width: 130, height: 80)
-            .background(.black)
             .overlay(
                 RoundedRectangle(cornerRadius: 4)
                     .stroke(Color.white.opacity(0.8), lineWidth: 2)

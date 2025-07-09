@@ -1,9 +1,11 @@
 import {ColumnType, Insertable, Updateable, Selectable, JSONColumnType} from "kysely";
 
+export type UploadStatus = 'created' | 'initiated' | 'uploading' | 'processing' | 'done' | 'cancelled' | 'failed'
+
 export interface UploadTable {
     id: ColumnType<string, string, never>
     fileKey: ColumnType<string, string, never>
-    status : 'created' | 'initiated' | 'uploading' | 'done' | 'cancelled' | 'failed'
+    status : UploadStatus
     fileName : ColumnType<string, string, never>
     contentType : ColumnType<string, string, never>
     tags : JSONColumnType<string[]>
@@ -15,6 +17,11 @@ export interface UploadTable {
 
     // 2025-07-03
     secretHash: ColumnType<string | null, string | undefined, string | undefined>
+
+    // 2025-07-07
+    isDeleted: ColumnType<boolean, boolean | number, boolean | number | undefined>
+    deletedAt: ColumnType<Date | undefined, Date | string | undefined, Date | string | undefined>
+    deletedBy: string | null
 }
 
 export type Upload = Selectable<UploadTable>

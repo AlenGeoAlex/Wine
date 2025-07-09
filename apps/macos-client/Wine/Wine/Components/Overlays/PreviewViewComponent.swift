@@ -137,7 +137,7 @@ struct PreviewViewComponent: View {
                 if self.settingsService.uploadSettings.type != .none {
                     ActionButton(iconName: "icloud.and.arrow.up", isInInteraction: self.isInInteraction, hoverColor: .blue) {
                         Task {
-                            let response = await self.screenshotOrchestra.tryUpload(capturedFile: self.uploadContent)
+                            let _ = await self.screenshotOrchestra.tryUpload(capturedFile: self.uploadContent)
                             self.processingState = .none
                             onClose()
                         }

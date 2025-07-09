@@ -3,13 +3,13 @@ import { Kysely } from 'kysely'
 export async function up(db: Kysely<any>): Promise<void> {
     await db.schema
         .alterTable('upload')
-        .addColumn('secretHash', 'text')
-        .execute()
+        .addColumn('expiration', 'text', (col) => col.defaultTo(false).notNull())
+        .execute();
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
     await db.schema
         .alterTable('upload')
-        .dropColumn('secretHash')
+        .dropColumn('expiration')
         .execute()
 }

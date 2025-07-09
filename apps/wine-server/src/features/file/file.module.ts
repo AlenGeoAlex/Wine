@@ -8,6 +8,9 @@ import {SharedModule} from "@shared/shared.module";
 import { FileContentHandler } from './handlers/file-content-handler.service';
 import { FileInfoHandler } from './handlers/file-info-handler';
 import { FileListHandler } from './handlers/file-list-handler';
+import { FileDeleteHandler } from './handlers/file-delete-handler';
+import { FileEventListener } from './listeners/file-event-listener';
+import { FilePreSignedUrlHandler } from './handlers/file-pre-signed-url-handler.service';
 
 @Module({
     providers: [
@@ -16,7 +19,10 @@ import { FileListHandler } from './handlers/file-list-handler';
         FileUploadHandler,
         FileContentHandler,
         FileInfoHandler,
-        FileListHandler
+        FileListHandler,
+        FileDeleteHandler,
+        FileEventListener,
+        FilePreSignedUrlHandler
     ],
     controllers: [FileController],
     imports: [

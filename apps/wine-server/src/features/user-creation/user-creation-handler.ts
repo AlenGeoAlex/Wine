@@ -46,7 +46,7 @@ export class UserCreationHandler implements ICommandHandler<UserCreationCommand,
             await transaction.commit().execute();
             return new UserCreationCommandResponse(user, token);
         }catch (e) {
-            transaction.rollback();
+            await transaction.rollback().execute();
             this.logger.error(e);
 
             if(e instanceof Error && e.message.toLowerCase().includes("unique")){

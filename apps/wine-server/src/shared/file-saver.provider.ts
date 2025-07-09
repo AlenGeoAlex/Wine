@@ -37,6 +37,32 @@ export class FileSaverProvider {
         }
     }
 
+    async deleteFile(filePath: string): Promise<boolean> {
+        const rootPath = this.configService.get<string>(
+            CONSTANTS.CONFIG_KEYS.STORAGE.FS.FS_FILE_PATH,
+        );
+
+        if (!rootPath) {
+            this.logger.error('Storage path not configured');
+            throw new Error('Storage path not configured');
+        }
+
+        try {
+            const absolutePath = path.join(rootPath, filePath);
+
+            await fs.rm(absolutePath, {
+                recursive: true,
+                force: true,
+                maxRetries: 3,
+                retryDelay: 5000,
+            })
+            return true;
+        }catch (err) {
+            this.logger.error('Error deleting file:', err);
+            return false;
+        }
+    }
+
     async getFile(filePath: string): Promise<Buffer> {
         const rootPath = this.configService.get<string>(
             CONSTANTS.CONFIG_KEYS.STORAGE.FS.FS_FILE_PATH,

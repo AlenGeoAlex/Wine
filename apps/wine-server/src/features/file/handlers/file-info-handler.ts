@@ -1,6 +1,7 @@
 import {Injectable, NotFoundException} from '@nestjs/common';
 import {ICommandRequest, ICommandResponse, ICommandHandler} from "@common/utils";
 import {FileService} from "@features/file/file.service";
+import {UploadStatus} from "common-models";
 
 export class FileInfoResponse implements ICommandResponse {
     id: string;
@@ -8,7 +9,7 @@ export class FileInfoResponse implements ICommandResponse {
     size: number;
     expiration: Date | undefined;
     secure: boolean
-    status: 'created' | 'initiated' | 'uploading' | 'done' | 'cancelled' | 'failed'
+    status: UploadStatus
     tags: string[] = []
     contentType: string;
 

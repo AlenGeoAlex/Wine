@@ -12,7 +12,7 @@ struct FileUploadRequest : Codable, Hashable {
     let size : Int
     let tags : [String]
     let contentType : String
-    let expiration : Date?
+    let expiration : String?
     
     enum CodingKeys : String, CodingKey {
         case fileName
