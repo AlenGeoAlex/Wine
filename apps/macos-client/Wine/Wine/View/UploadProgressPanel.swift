@@ -19,12 +19,10 @@ class UploadProgressPanel: NSPanel {
     
     let id : UUID = UUID()
     private let captureFile : CapturedFile
-    private let fileUploader : FileUploader
     let view = CloudUploadProgress();
 
-    init(captureFile: CapturedFile, fileUploader: FileUploader){
+    init(captureFile: CapturedFile){
         self.captureFile = captureFile
-        self.fileUploader = fileUploader
         super.init(
             contentRect: .zero,
             styleMask: [.borderless, .nonactivatingPanel, .titled],

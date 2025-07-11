@@ -4,6 +4,7 @@ import {FileService} from "@features/file/file.service";
 import {ClsService} from "nestjs-cls";
 import {CONSTANTS} from "@common/constants";
 import {UploadStatus} from "common-models";
+import {IsOptional, Max, Min} from "class-validator";
 
 export interface File {
     id: string,
@@ -22,8 +23,15 @@ export class FileListResponse implements ICommandResponse, IPaginatedResponse<Fi
 }
 
 export class FileListQuery implements ICommandRequest<FileListResponse>, IPaginatedQuery {
+
+    @Min(0)
     skip: number = 0;
+
+    @Min(1)
+    @Max(50)
     take: number = 50;
+
+    @IsOptional()
     userId?: string;
 }
 

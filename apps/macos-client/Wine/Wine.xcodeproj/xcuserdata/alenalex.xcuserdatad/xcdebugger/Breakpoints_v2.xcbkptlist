@@ -36,5 +36,67 @@
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "6C40C9A4-3C9E-494E-9BE4-12B5F5B1EA8F"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Wine/Services/Api/FileUploader.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "24"
+            endingLineNumber = "24"
+            landmarkName = "uploadFile(id:for:progressHandler:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "D887D812-C387-4C9D-AC55-FADD7595248C"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Wine/Services/OverlayWindowService.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "45"
+            endingLineNumber = "45"
+            landmarkName = "showProgressOverlay(for:id:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "D887D812-C387-4C9D-AC55-FADD7595248C - 4df299b88dc86d7"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(1) suspend resume partial function for Wine.OverlayWindowService.showProgressOverlay(for: Wine.CapturedFile, id: Swift.String) async -&gt; Swift.Optional&lt;Foundation.URL&gt;"
+                  moduleName = "Wine.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/alenalex/Work/Hobby/Wine/apps/macos-client/Wine/Wine/Services/OverlayWindowService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "45"
+                  endingLineNumber = "45">
+               </Location>
+               <Location
+                  uuid = "D887D812-C387-4C9D-AC55-FADD7595248C - 2263af73b2192054"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(2) suspend resume partial function for Wine.OverlayWindowService.showProgressOverlay(for: Wine.CapturedFile, id: Swift.String) async -&gt; Swift.Optional&lt;Foundation.URL&gt;"
+                  moduleName = "Wine.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/alenalex/Work/Hobby/Wine/apps/macos-client/Wine/Wine/Services/OverlayWindowService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "45"
+                  endingLineNumber = "45">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
    </Breakpoints>
 </Bucket>

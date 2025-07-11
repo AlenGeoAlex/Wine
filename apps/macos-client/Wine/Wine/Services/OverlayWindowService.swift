@@ -16,6 +16,7 @@ class OverlayWindowService : NSObject {
     
     private var overlayWindows : [UUID : PreviewPanel] = [:];
     private var cloudShareWindow : [UUID : NSWindow] = [:];
+    private var progressOverlay : [UUID : NSWindow] = [:];
     
     public func showCloudShare(with captureFile: CapturedFile){
         let cloudSharePanel = CloudUploadPanel(
@@ -38,6 +39,36 @@ class OverlayWindowService : NSObject {
         cloudSharePanel.makeKeyAndOrderFront(nil)
         cloudSharePanel.makeKey()
         logger.info("Showing cloud share window")
+    }
+    
+    public func showProgressOverlay(for captureFile: CapturedFile, id: String) async -> URL? {
+        let uploadProgressPanel :UploadProgressPanel = await UploadProgressPanel(captureFile: captureFile)
+        progressOverlay[uploadProgressPanel.id] = uploadProgressPanel
+        let fileUploader = FileUploader();
+        await uploadProgressPanel.makeKeyAndOrderFront(nil)
+        await uploadProgressPanel.makeKey()
+        logger.info("Showing cloud progress window")
+
+        let url = await fileUploader.uploadFile(id: id, for: captureFile, progressHandler: {
+            progress in
+            Task {
+                @MainActor in
+                uploadProgressPanel.updateProgress(progress: progress)
+            }
+        })
+        closeProgressOverlay(for: uploadProgressPanel.id)
+        return url
+    }
+    
+    
+    public func closeProgressOverlay(for uuid: UUID){
+        guard let panel = progressOverlay[uuid] else {
+            logger.error("Could not find progress overlay window for \(uuid)")
+            return
+        }
+        
+        panel.close()
+        progressOverlay[uuid] = nil
     }
     
     public func closeCloudShare(for uuid: UUID){

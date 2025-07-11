@@ -19,7 +19,7 @@ export interface UploadTable {
     secretHash: ColumnType<string | null, string | undefined, string | undefined>
 
     // 2025-07-07
-    isDeleted: ColumnType<boolean, boolean | number, boolean | number | undefined>
+    isDeleted: ColumnType< boolean | number, boolean | number, boolean | number | undefined>
     deletedAt: ColumnType<Date | undefined, Date | string | undefined, Date | string | undefined>
     deletedBy: string | null
 }

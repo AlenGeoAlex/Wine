@@ -45,10 +45,9 @@ export class FileService {
 
         if(!includeDeleted)
             selectQueryBuilder = selectQueryBuilder
-                .where('isDeleted','=', false)
+                .where('isDeleted','=', this.databaseService.parseBoolean(false));
 
         const rows = await selectQueryBuilder
-            .where('isDeleted', '=', false)
             .offset(skip)
             .limit(take)
             .orderBy('createdAt', 'desc')
@@ -76,6 +75,7 @@ export class FileService {
         const db = options?.trx ?? this.databaseService.getDb();
         const id = ulid();
         const fileKey = `${upload.userId}/${format(new Date(), 'yyyy-MM-dd')}/${id}.${upload.extension}`
+
         await db.insertInto('upload')
             .values({
                 id: id,
@@ -86,7 +86,7 @@ export class FileService {
                 createdAt: new Date().toISOString(),
                 status: 'created',
                 size: upload.size,
-                tags: JSON.stringify(upload.tags ?? []),
+                tags: "[]",
                 contentType: upload.contentType,
                 expiration: upload.expiration instanceof Date ? upload.expiration.toISOString() : upload.expiration,
                 isDeleted: this.databaseService.parseBoolean(false),
@@ -138,7 +138,7 @@ export class FileService {
 
         if(!options?.includeDeleted)
             selectQueryBuilder = selectQueryBuilder
-                .where('isDeleted', '=', false);
+                .where('isDeleted', '=', this.databaseService.parseBoolean(false));
 
         return await selectQueryBuilder
             .selectAll()

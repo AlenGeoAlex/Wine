@@ -166,59 +166,9 @@ class AppOrchestra : ObservableObject {
     }
     
     
-    func tryUpload(capturedFile : CapturedFile) async -> Result<Bool, UploadServiceError>  {
-        do {
-            Task { @MainActor in
-                previewOverlayService.showCloudShare(with: capturedFile)
-            }
-            
-//            var fileName : String;
-//            var ext = "png"
-//            let size = try FileHelpers.getFileSize(at: capturedFile.fileContent)
-//            let tags = [] as [String];
-//            var contentType = "image/png";
-//            let expiration: Date? = nil;
-//            switch capturedFile.captureType {
-//            case .screenshot:
-//                fileName = "screenshot.png"
-//                ext = "png"
-//                contentType = "image/png"
-//            case .video:
-//                fileName = "video.mp4"
-//                ext = "mp4"
-//                contentType = "video/mp4"
-//            }
-//            let fileRequest = FileUploadRequest(fileName: fileName, ext: ext, size: size, tags: tags, contentType: contentType, expiration: expiration)
-//            
-//            let createResponse = try await self.fileUploadApiService.createFile(with: fileRequest);
-//            
-//            self.logger.info("Recieved response to upload to cloud with id \(createResponse.id) and uploadType with \(createResponse.uploadType.rawValue)")
-//            
-//            var uploadUrl : URL?;
-//            switch createResponse.uploadType {
-//            case .direct:
-//                uploadUrl = await createUploadDirectly(for: capturedFile, with: createResponse);
-//            case .presigned:
-//                uploadUrl = await createS3Upload(for: capturedFile, with: createResponse);
-//            }
-//            
-//            logger.info("\(uploadUrl?.absoluteString ?? "")")
-//            if uploadUrl != nil {
-//                ClipboardHelper.copyStringToClipboard(uploadUrl?.absoluteString ?? "")
-//                let fileDeleteReponse = FileHelpers.delete(file: capturedFile.fileContent)
-//                switch fileDeleteReponse {
-//                case .success:
-//                    logger.info("File deleted successfully")
-//                case .failure(let error):
-//                    logger.error("Failed to delete file \(error)")
-//                }
-//            }
-            return .success(true);
-        }
-        catch
-        {
-            logger.error("Failed to upload \(error)")
-            return .failure(.unknown);
+    func tryUpload(capturedFile : CapturedFile) async  {
+        Task { @MainActor in
+            previewOverlayService.showCloudShare(with: capturedFile)
         }
     }
     
