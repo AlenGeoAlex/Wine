@@ -14,6 +14,7 @@
 		581D50E22E1F8983008AAA52 /* DefaultsMacros in Frameworks */ = {isa = PBXBuildFile; productRef = 581D50E12E1F8983008AAA52 /* DefaultsMacros */; };
 		581D51C22E1F9820008AAA52 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = 581D51C12E1F9820008AAA52 /* KeyboardShortcuts */; };
 		581D51C52E1F9835008AAA52 /* ScreenCaptureKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 581D51C42E1F9835008AAA52 /* ScreenCaptureKit.framework */; };
+		588D571F2E2182AB00B362B8 /* Vision.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 588D571E2E2182AB00B362B8 /* Vision.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,6 +39,7 @@
 		581D50B12E1F852E008AAA52 /* WineTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WineTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		581D50BB2E1F852E008AAA52 /* WineUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WineUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		581D51C42E1F9835008AAA52 /* ScreenCaptureKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ScreenCaptureKit.framework; path = System/Library/Frameworks/ScreenCaptureKit.framework; sourceTree = SDKROOT; };
+		588D571E2E2182AB00B362B8 /* Vision.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vision.framework; path = System/Library/Frameworks/Vision.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -65,6 +67,7 @@
 			files = (
 				581D50E02E1F8983008AAA52 /* Defaults in Frameworks */,
 				581D50DB2E1F86DC008AAA52 /* FactoryKit in Frameworks */,
+				588D571F2E2182AB00B362B8 /* Vision.framework in Frameworks */,
 				581D51C22E1F9820008AAA52 /* KeyboardShortcuts in Frameworks */,
 				581D50D92E1F86DC008AAA52 /* Factory in Frameworks */,
 				581D51C52E1F9835008AAA52 /* ScreenCaptureKit.framework in Frameworks */,
@@ -114,6 +117,7 @@
 		581D51C32E1F9835008AAA52 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				588D571E2E2182AB00B362B8 /* Vision.framework */,
 				581D51C42E1F9835008AAA52 /* ScreenCaptureKit.framework */,
 			);
 			name = Frameworks;

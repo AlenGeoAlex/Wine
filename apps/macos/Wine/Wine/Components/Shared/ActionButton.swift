@@ -13,7 +13,7 @@ struct ActionButton: View {
     
     init(
         name iconName: String,
-        normalColor: Color = .gray,
+        normalColor: Color = .white,
         hoverColor: Color = .blue,
         onClick: @escaping () -> Void,
         isInteracting: @escaping (Bool) -> Void

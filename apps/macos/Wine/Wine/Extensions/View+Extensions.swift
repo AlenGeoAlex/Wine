@@ -29,6 +29,20 @@ extension View {
         return image
     }
     
+    @inlinable
+    public func reverseMask<Mask: View>(
+        alignment: Alignment = .center,
+        @ViewBuilder _ mask: () -> Mask
+    ) -> some View {
+        self.mask {
+            Rectangle()
+                .overlay(alignment: alignment) {
+                    mask()
+                        .blendMode(.destinationOut)
+                }
+        }
+    }
+    
     @ViewBuilder
     func draggable(if condition: Bool, annotation: Binding<TextAnnotation>) -> some View {
         if condition {

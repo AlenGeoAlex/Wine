@@ -27,8 +27,8 @@ class ImageEditorWindowController: NSWindowController, NSWindowDelegate {
         window.title = "Image Editor - \(capture.filePath.lastPathComponent)"
         window.contentView = hostingView
         window.center()
-        window.minSize = NSSize(width: 640, height: 480)
-        window.setContentSize(NSSize(width: 800, height: 600))
+        window.minSize = NSSize(width: 1000, height: 620)
+        window.setContentSize(NSSize(width: 800, height: 620))
         
         super.init(window: window)
 

@@ -12,13 +12,16 @@ import SwiftUI
 
 @Observable class EditorOptions {
     var aspectRatio: AspectRatio = .square
+    
+    // Background
     var backgroundType: BackgroundType = .gradient
     var backgroundColor: Color = .blue
     var backgroundGradient: Gradient = Gradient(colors: [.blue, .purple, .cyan])
     var horizontalPadding: CGFloat = 40.0
-    var verticalPadding: CGFloat = 20.0
-
     var cornerRadius: CGFloat = 12
+    var backgroundImageUrl: ImageSource?
+    var backgroundImageBlurRadius: CGFloat = 0
+    
     var imageCornerRadius: CGFloat = 12
     var is3DEffect: Bool = false
     var perspective3DDirection: Perspective3DDirection = .bottomRight

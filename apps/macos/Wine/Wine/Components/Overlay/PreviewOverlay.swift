@@ -75,7 +75,7 @@ struct PreviewOverlay: View {
                 ShareLink(item: self.viewModel.capture.filePath) {
                     Image(systemName: "square.and.arrow.up")
                         .font(.system(size: 20))
-                        .foregroundColor(self.viewModel.isShareLinkHovering ? .green : .gray)
+                        .foregroundColor(self.viewModel.isShareLinkHovering ? .green : .white)
                         .frame(width: 40, height: 40)
                         .scaleEffect(self.viewModel.isShareLinkHovering ? 1.15 : 1.0)
                 }

@@ -14,8 +14,11 @@ import AVFoundation
 
 class Capture : NSObject, Identifiable {
     
-    static let log : Logger = Logger.create();
+    static func preview() -> Capture {
+        return Capture(type: .screenshot(ScreenshotOptions.defaultSettings()), ext: ".png", filePath: URL(string: "https://imgur.com/gallery/inferno-tree-lRYUhYh#/t/abstract_art")!)
+    }
     
+    static let log : Logger = Logger.create();
     deinit {
         Self.log.debug("Capture deinitialized")
     }
@@ -52,6 +55,7 @@ class Capture : NSObject, Identifiable {
         self.imagePreview = self._previewImage.eraseToAnyPublisher();
         super.init();
         self.initParentDirectory();
+        Self.log.debug("Capture initialized: \(self.filePath)")
     }
     
     func currentPreviewImage() -> NSImage? {

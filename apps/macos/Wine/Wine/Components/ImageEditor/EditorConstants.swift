@@ -105,3 +105,4 @@ enum DrawingTool: Equatable, Hashable {
         }
     }
 }
+
