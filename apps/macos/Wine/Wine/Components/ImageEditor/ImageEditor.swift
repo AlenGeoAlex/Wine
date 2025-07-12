@@ -25,44 +25,36 @@ struct ImageEditor: View {
     var body: some View {
         HSplitView {
             ControlsView(viewModel: viewModel)
-                .frame(minWidth: 400, idealWidth: 400, maxWidth: .infinity, maxHeight: .infinity)
-            
-            ZStack {
-                ImageCanvasView(viewModel: viewModel, isInteractive: true)
-                    .frame(minWidth: 520, maxWidth: .infinity, maxHeight: .infinity)
-                    .scaleEffect(viewModel.scale * gestureScale)
-                    .offset(viewModel.offset + gestureOffset)
-                    .clipped()
-                    .onHover { hovering in
-                        self.viewModel.isHoveringOverImagePort = hovering
-                    }
-                    .gesture(
-                        TapGesture(count: 2).onEnded {
-                            viewModel.resetZoomAndPan()
-                        }
-                        .simultaneously(with: TapGesture(count: 1).onEnded {
-                            print("Tap")
-                        })
-                    )
-                    .onAppear(perform: {
-                        if viewModel.zoomingMonitor == nil {
-                            viewModel.zoomingMonitor = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel, handler: { event in
-                                if self.viewModel.isHoveringOverImagePort == false { return event }
-                                
-                                let x = event.scrollingDeltaY/100
-                                viewModel.scale += x
-                                if viewModel.scale < 0.1 { viewModel.scale = 0.1 }
-                                return event;
-                            })
-                        }
-                    })
-                    .onDisappear(perform: {
-                        if viewModel.zoomingMonitor != nil {
-                            NSEvent.removeMonitor(viewModel.zoomingMonitor!)
-                            viewModel.zoomingMonitor = nil
-                        }
-                    })
+                .frame(minWidth: 280, idealWidth: 320, maxWidth: 400) // Removed maxHeight, let it be flexible
 
+
+            ZStack {
+                Color(nsColor: .windowBackgroundColor)
+                    .edgesIgnoringSafeArea(.all)
+                    .onTapGesture {
+                        viewModel.deselectAllElements()
+                    }
+
+                GeometryReader { geometry in
+                    ImageCanvasView(viewModel: viewModel, isInteractive: true)
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                        .onChange(of: geometry.size) { _, newSize in
+                            viewModel.canvasSize = newSize
+                            viewModel.offset = .zero
+                            if !viewModel.isCropping {
+                                viewModel.cropRect = CGRect(origin: .zero, size: newSize)
+                            }
+                        }
+                        .onAppear {
+                            viewModel.canvasSize = geometry.size
+                            if viewModel.cropRect == .zero {
+                                viewModel.cropRect = CGRect(origin: .zero, size: geometry.size)
+                            }
+                        }
+                }
+                .scaleEffect(viewModel.scale * gestureScale)
+                .offset(viewModel.offset + gestureOffset)
+                .clipped()
 
                 VStack {
                     HStack {
@@ -77,24 +69,129 @@ struct ImageEditor: View {
                     Spacer()
                 }
             }
+            .frame(minWidth: 520, maxWidth: .infinity, maxHeight: .infinity)
             .clipped()
+            .onHover { hovering in
+                self.viewModel.isHoveringOverImagePort = hovering
+            }
             .gesture(panGesture())
+            .simultaneousGesture(magnificationGesture())
+            .simultaneousGesture(doubleTapToResetGesture())
+            
+            .onAppear(perform: {
+                if viewModel.zoomingMonitor == nil {
+                    viewModel.zoomingMonitor = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel, handler: monitorScrollWheel)
+                }
+                
+                if viewModel.keyboardMonitor == nil {
+                    viewModel.keyboardMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyUp, .keyDown], handler: keyboardMonitor)
+                }
+            })
+            .onDisappear(perform: {
+                if let monitor = viewModel.zoomingMonitor {
+                    NSEvent.removeMonitor(monitor)
+                    viewModel.zoomingMonitor = nil
+                }
+                
+                if let keyboardMonitor = viewModel.keyboardMonitor {
+                    NSEvent.removeMonitor(keyboardMonitor)
+                    viewModel.keyboardMonitor = nil
+                }
+            })
         }
     }
     
     private func panGesture() -> some Gesture {
-        DragGesture()
+        DragGesture(minimumDistance: 0)
             .updating($gestureOffset) { latestValue, gestureState, _ in
-                if viewModel.scale > 1.0 && self.viewModel.currentTool == .select {
+                let isPanning = NSEvent.modifierFlags.contains(.command) || viewModel.currentTool != .select
+                if viewModel.scale > 1.0 && isPanning {
                     gestureState = latestValue.translation
                 }
             }
             .onEnded { finalValue in
-                if viewModel.scale > 1.0 && self.viewModel.currentTool == .select {
+                let isPanning = NSEvent.modifierFlags.contains(.command) || viewModel.currentTool != .select
+                if viewModel.scale > 1.0 && isPanning {
                     viewModel.offset.width += finalValue.translation.width
                     viewModel.offset.height += finalValue.translation.height
                 }
             }
+    }
+
+    private func magnificationGesture() -> some Gesture {
+        MagnificationGesture()
+            .updating($gestureScale) { latestGestureScale, gestureState, _ in
+                gestureState = latestGestureScale
+            }
+            .onEnded { finalGestureScale in
+                viewModel.scale *= finalGestureScale
+            }
+    }
+    
+    private func doubleTapToResetGesture() -> some Gesture {
+        TapGesture(count: 2).onEnded {
+            viewModel.resetZoomAndPan()
+        }
+    }
+    
+    func selectedElements() -> [any CanvasElement] {
+        return viewModel.selectedElements();
+    }
+    
+    private func deleteSelectedElements() {
+        self.selectedElements().forEach { element in
+            self.viewModel.remove(forKey: element.id)
+        }
+    }
+    
+    private func keyboardMonitor(event: NSEvent) -> NSEvent? {
+        guard event.type == .keyDown else {
+            return event
+        }
+        let isDeleteKey = (event.keyCode == 51 || event.keyCode == 117)
+
+        if isDeleteKey {
+            if let firstResponder = NSApp.keyWindow?.firstResponder, firstResponder.isKind(of: NSText.self) {
+                return event
+            }
+
+            DispatchQueue.main.async {
+                self.deleteSelectedElements()
+            }
+            
+            return nil
+        }
+        
+        return event
+    }
+
+    private func monitorScrollWheel(event: NSEvent) -> NSEvent? {
+        // Zoom the entire area
+        if self.viewModel.isHoveringOverImagePort == true && !event.modifierFlags.contains(.command) {
+            let delta = event.scrollingDeltaY / 100
+            viewModel.scale = max(0.2, viewModel.scale + delta)
+            return nil;
+        }
+        
+        // Zoom the selected elements (Images/Text only for now)
+        self.selectedElements().forEach { element in
+            let delta = event.scrollingDeltaY / 50.0
+
+            if element is ImageElement {
+                let imageElement = (element as? ImageElement)!
+                let newScale = imageElement.scale + delta
+                imageElement.scale =  max(0.1, newScale);
+                return;
+            }
+            
+            if(element is TextAnnotation) {
+                let textElement = (element as? TextAnnotation)!
+                textElement.fontSize += CGFloat(delta)
+                return;
+            }
+        }
+        
+        return event;
     }
 }
 

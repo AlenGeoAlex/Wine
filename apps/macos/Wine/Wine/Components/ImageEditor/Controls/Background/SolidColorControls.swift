@@ -28,6 +28,7 @@ struct SolidColorControls: View {
                         Circle()
                             .fill(color)
                             .overlay(Circle().stroke(Color.secondary.opacity(0.5), lineWidth: 1))
+                            .frame(width: 30, height: 30)
                     }
                     .buttonStyle(.plain)
                 }

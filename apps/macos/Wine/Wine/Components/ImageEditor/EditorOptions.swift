@@ -13,11 +13,11 @@ import SwiftUI
 @Observable class EditorOptions {
     var aspectRatio: AspectRatio = .square
     
+    
     // Background
     var backgroundType: BackgroundType = .gradient
     var backgroundColor: Color = .blue
     var backgroundGradient: Gradient = Gradient(colors: [.blue, .purple, .cyan])
-    var horizontalPadding: CGFloat = 40.0
     var cornerRadius: CGFloat = 12
     var backgroundImageUrl: ImageSource?
     var backgroundImageBlurRadius: CGFloat = 0
@@ -26,6 +26,9 @@ import SwiftUI
     var is3DEffect: Bool = false
     var perspective3DDirection: Perspective3DDirection = .bottomRight
     
-    var annotations: [TextAnnotation] = []
     var elements: [any CanvasElement] = []
+    
+    func images() -> [ImageElement] {
+        return elements.filter { $0 is ImageElement } as! [ImageElement]
+    }
 }

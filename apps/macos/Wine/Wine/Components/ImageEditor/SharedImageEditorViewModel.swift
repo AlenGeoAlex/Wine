@@ -19,9 +19,10 @@ import OSLog
     }
     
     var captures : [UUID:Capture] = [:];
-    
+    var canvasWidth: CGFloat = 600
+    var canvasHeight: CGFloat = 500
+    var canvasCenter: CGPoint = .zero
     let capture: Capture;
-    let image: NSImage?;
     var editorOptions: EditorOptions = .init();
     var scale: CGFloat = 1.0
     var offset: CGSize = .zero
@@ -29,6 +30,7 @@ import OSLog
     var activeFreehandLine: FreehandLine?
     var isHoveringOverImagePort: Bool = false
     var zoomingMonitor: Any?
+    var keyboardMonitor: Any?
     var isCropping: Bool = false
     var cropRect: CGRect = .zero
     var croppedImage: NSImage?
@@ -38,8 +40,61 @@ import OSLog
     
     init(capture: Capture) {
         self.capture = capture
-        self.image = NSImage(contentsOf: capture.filePath)
-        self.captures[capture.id] = capture // TODO MODEL PROPERLY TOMORROW
+        self.addImage(for: capture, at: canvasCenter)
+        var image = editorOptions.elements.filter({$0 is ImageElement}).first
+        image?.isSelected = true;
+        image?.position = canvasCenter;
+    }
+    
+    func addImage(for capture: Capture, at position: CGPoint?) {
+        if let image = NSImage(contentsOf: capture.filePath) {
+            let imageElement = ImageElement(id: capture.id, image: image)
+            editorOptions.elements.append(imageElement)
+            selectElement(imageElement)
+        }
+        captures[capture.id] = capture
+        recalculateCanvasSize()
+    }
+    
+    func removeImage(at offsets: IndexSet) {
+        editorOptions.elements.remove(atOffsets: offsets)
+        recalculateCanvasSize()
+    }
+    
+    func remove(forKey: UUID){
+        editorOptions.elements.removeAll { $0.id == forKey }
+    }
+    
+    
+    private func recalculateCanvasSize() {
+        guard let largestImage = editorOptions.images().max(by: {
+            let area1 = $0.imageToRender.size.width * $0.imageToRender.size.height
+            let area2 = $1.imageToRender.size.width * $1.imageToRender.size.height
+            return area1 < area2
+        }) else {
+            withAnimation(.spring) {
+                self.canvasWidth = 600
+                self.canvasHeight = 500
+            }
+            return
+        }
+
+        let imageSize = largestImage.imageToRender.size
+        let newWidth: CGFloat
+        let newHeight: CGFloat
+        
+        if editorOptions.aspectRatio.ratio >= 1 {
+            newWidth = min(700, max(500, imageSize.width * 1.2))
+            newHeight = newWidth / editorOptions.aspectRatio.ratio
+        } else {
+            newHeight = min(800, max(500, imageSize.height * 1.2))
+            newWidth = min(600, max(400, newHeight * editorOptions.aspectRatio.ratio))
+        }
+        
+        withAnimation(.spring) {
+            self.canvasWidth = newWidth
+            self.canvasHeight = newHeight
+        }
     }
     
     func resetZoomAndPan() {
@@ -49,85 +104,29 @@ import OSLog
         }
     }
     
-    var calculatedCanvasWidth: CGFloat {
-        if let image = image {
-            if editorOptions.aspectRatio.ratio >= 1 {
-                return min(700, max(500, image.size.width * 1.2))
-            } else {
-                return min(600, max(400, image.size.height * 1.2 * editorOptions.aspectRatio.ratio))
-            }
-        }
-        return 600
-    }
-    
-    var calculatedCanvasHeight: CGFloat {
-        if let image = image {
-            if editorOptions.aspectRatio.ratio >= 1 {
-                return calculatedCanvasWidth / editorOptions.aspectRatio.ratio
-            } else {
-                return min(800, max(500, image.size.height * 1.2))
-            }
-        }
-        return 500 // Default
-    }
-    
-    /**
-     * Returns the 3D rotation angle based on selected direction
-     */
-    func get3DRotationAngle() -> Angle {
-        switch editorOptions.perspective3DDirection {
-        case .topLeft, .top, .topRight:
-            return .degrees(15)
-        case .bottomLeft, .bottom, .bottomRight:
-            return .degrees(-15)
-        }
-    }
-    
-    /**
-     * Returns the 3D rotation axis based on selected direction
-     */
-    func get3DRotationAxis() -> (x: CGFloat, y: CGFloat, z: CGFloat) {
-        switch editorOptions.perspective3DDirection {
-        case .topLeft:
-            return (x: 1, y: 1, z: 0)
-        case .top:
-            return (x: 1, y: 0, z: 0)
-        case .topRight:
-            return (x: 1, y: -1, z: 0)
-        case .bottomLeft:
-            return (x: -1, y: 1, z: 0)
-        case .bottom:
-            return (x: -1, y: 0, z: 0)
-        case .bottomRight:
-            return (x: -1, y: -1, z: 0)
-        }
-    }
-    
-    /**
-     * Returns the anchor point for rotation based on direction
-     */
-    func get3DRotationAnchor() -> UnitPoint {
-        switch editorOptions.perspective3DDirection {
-        case .topLeft:
-            return .topLeading
-        case .top:
-            return .top
-        case .topRight:
-            return .topTrailing
-        case .bottomLeft:
-            return .bottomLeading
-        case .bottom:
-            return .bottom
-        case .bottomRight:
-            return .bottomTrailing
-        }
-    }
-    
     func toggleCropping() {
         isCropping.toggle()
         if !isCropping {
             croppedImage = nil
         }
+    }
+    
+    func selectElement(_ selectedElement: any CanvasElement) {
+        deselectAllElements()
+        
+        if let index = editorOptions.elements.firstIndex(where: { $0.id == selectedElement.id }) {
+            editorOptions.elements[index].isSelected = true
+        }
+    }
+    
+    func deselectAllElements() {
+        for i in editorOptions.elements.indices {
+            editorOptions.elements[i].isSelected = false
+        }
+    }
+    
+    func selectedElements() -> [any CanvasElement] {
+        return editorOptions.elements.filter { $0.isSelected }
     }
     
     @MainActor

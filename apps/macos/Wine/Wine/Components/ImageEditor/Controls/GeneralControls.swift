@@ -10,9 +10,12 @@ import SwiftUI
 struct GeneralControls: View {
     @State var sharedEditorOptions: SharedImageEditorViewModel;
 
+    
     var body: some View {
         Group {
-            CropEditorControls(viewModel: sharedEditorOptions)
+//            if sharedEditorOptions.selectedElement == nil {
+//
+//            }
         }
     }
 }

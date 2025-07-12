@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct ImageCanvasView: View {
     @State var viewModel: SharedImageEditorViewModel
@@ -18,11 +19,12 @@ struct ImageCanvasView: View {
                     .frame(width: geometry.size.width, height: geometry.size.height)
                     .overlay {
                         if viewModel.isCropping {
-                            CropView(cropRect: $viewModel.cropRect, canvasSize: geometry.size)
+                            CropView(cropRect: viewModel.cropRect, canvasSize: geometry.size)
                         }
                     }
                     .onAppear {
                         self.viewModel.canvasSize = geometry.size
+                        self.viewModel.canvasCenter = CGPoint(x: geometry.size.width/2, y: geometry.size.height/2)
                         print("Update canvas size \(geometry.size.width) x \(geometry.size.height)")
                         if viewModel.cropRect == .zero {
                             viewModel.cropRect = CGRect(origin: .zero, size: geometry.size)
@@ -30,17 +32,55 @@ struct ImageCanvasView: View {
                     }
                     .onChange(of: geometry.size) { (_, newSize) in
                         self.viewModel.canvasSize = newSize
+                        self.viewModel.canvasCenter = CGPoint(x: geometry.size.width/2, y: geometry.size.height/2)
+                    }
+                    .onDrop(of: [UTType.fileURL, UTType.image], isTargeted: nil) { providers, location in
+                        handleDrop(providers: providers, location: location)
+                        return true
                     }
             }
-            
-            // Display the final result if it exists
-            if let result = viewModel.croppedImage {
-                Divider()
-                Text("Cropped Result").padding(.top)
-                Image(nsImage: result)
-                    .resizable().scaledToFit().padding()
+    
+        }
+    }
+    
+    private func handleDrop(providers: [NSItemProvider], location: CGPoint) {
+        guard let provider = providers.first else { return }
+
+        if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
+            provider.loadObject(ofClass: NSURL.self) { (urlItem, error) in
+                guard let url = urlItem as? URL else { return }
+                
+                let capture = Capture(
+                    type: .screenshot(ScreenshotOptions.defaultSettings()), // Or determine type from file
+                    ext: url.pathExtension,
+                    filePath: url
+                )
+                
+                DispatchQueue.main.async {
+                    viewModel.addImage(for: capture, at: location)
+                }
             }
-            
+            return
+        }
+        
+        if provider.hasItemConformingToTypeIdentifier(UTType.image.identifier) {
+            provider.loadObject(ofClass: NSImage.self) { (imageItem, error) in
+                guard let image = imageItem as? NSImage else { return }
+                
+
+                let newCapture = Capture(
+                    type: .screenshot(ScreenshotOptions.defaultSettings()),
+                    ext: "png" // Default to PNG
+                )
+
+                let success = ImageHelper.saveImage(image, to: newCapture.filePath)
+                
+                if success {
+                    DispatchQueue.main.async {
+                        viewModel.addImage(for: newCapture, at: location)
+                    }
+                }
+            }
         }
     }
 }

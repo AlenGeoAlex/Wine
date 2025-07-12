@@ -8,7 +8,7 @@ import AppKit
 import Foundation
 import SwiftUI
 
-struct ShapeElement: CanvasElement, View {
+@Observable class ShapeElement: CanvasElement {
     let id = UUID()
     var position: CGPoint
     var isSelected: Bool = false
@@ -17,18 +17,11 @@ struct ShapeElement: CanvasElement, View {
     var size: CGSize
     var color: Color
     
-    var body: some View {
-        switch shapeType {
-        case .rectangle:
-            Rectangle()
-                .stroke(color, lineWidth: 5)
-                .frame(width: size.width, height: size.height)
-                .position(position)
-        case .ellipse:
-            Ellipse()
-                .stroke(color, lineWidth: 5)
-                .frame(width: size.width, height: size.height)
-                .position(position)
-        }
+    init(position: CGPoint, isSelected: Bool = false, shapeType: ShapeType, size: CGSize, color: Color) {
+        self.position = position
+        self.isSelected = isSelected
+        self.shapeType = shapeType
+        self.size = size
+        self.color = color
     }
 }

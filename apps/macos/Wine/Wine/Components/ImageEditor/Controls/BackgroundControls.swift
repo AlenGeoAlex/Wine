@@ -34,11 +34,7 @@ struct BackgroundControls: View {
 
             // MARK: - General Sizing Controls
             VStack(alignment: .leading, spacing: 15) {
-                Text("Padding & Shape").foregroundStyle(.secondary)
-                
-                Slider(value: $sharedEditorOptions.editorOptions.horizontalPadding, in: 0...200) {
-                    Text("Horizontal Padding")
-                }
+                Text("Corners").foregroundStyle(.secondary)
                 
                 Slider(value: $sharedEditorOptions.editorOptions.cornerRadius, in: 0...100) {
                     Text("Corner Radius")
