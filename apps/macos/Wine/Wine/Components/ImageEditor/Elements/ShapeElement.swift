@@ -12,7 +12,8 @@ import SwiftUI
     let id = UUID()
     var position: CGPoint
     var isSelected: Bool = false
-    
+    var isDirty: Bool = false
+
     var shapeType: ShapeType
     var size: CGSize
     var color: Color

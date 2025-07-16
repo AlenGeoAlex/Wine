@@ -9,6 +9,7 @@ import SwiftUI
 
 struct CanvasElementView: View {
     @State var element: any CanvasElement
+    @State var viewModel: SharedImageEditorViewModel
     let isInteractive: Bool
     let onSelect: () -> Void
     
@@ -26,9 +27,13 @@ struct CanvasElementView: View {
             }
             .position(x: element.position.x, y: element.position.y)
             .offset(dragOffset)
-            .onTapGesture {
+            .onTapGesture(coordinateSpace: .local) { location in
                 if isInteractive {
-                    onSelect()
+                    if self.viewModel.currentTool == DrawingTool.select{
+                        onSelect()
+                    }else {
+                        self.viewModel.handleCanvasTap(at: location)
+                    }
                 }
             }
             .gesture(isInteractive ? dragGesture : nil)
@@ -43,6 +48,8 @@ struct CanvasElementView: View {
             Text(textAnnotation.text)
                 .font(textAnnotation.font)
                 .foregroundColor(textAnnotation.color)
+                .underline(textAnnotation.isUnderline, color: textAnnotation.color)
+                .strikethrough(textAnnotation.isStrikethrough, color: textAnnotation.color)
                 .padding(10)
                 .background(Color.black.opacity(0.001))
                 .fixedSize()
@@ -56,11 +63,19 @@ struct CanvasElementView: View {
     private var dragGesture: some Gesture {
         DragGesture()
             .onChanged { value in
+                if self.viewModel.currentTool != DrawingTool.select{
+                    return;
+                }
                 self.dragOffset = value.translation
             }
             .onEnded { value in
+                if self.viewModel.currentTool != DrawingTool.select{
+                    return;
+                }
+                
                 element.position.x += value.translation.width
                 element.position.y += value.translation.height
+                element.isDirty = true
                 self.dragOffset = .zero
             }
     }

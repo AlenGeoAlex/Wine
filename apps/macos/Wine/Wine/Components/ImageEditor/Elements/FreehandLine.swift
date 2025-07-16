@@ -12,6 +12,7 @@ class FreehandLine: CanvasElement {
     let id = UUID()
     var position: CGPoint = .zero
     var isSelected: Bool = false
+    var isDirty: Bool = false
     
     var points: [CGPoint]
     var color: Color

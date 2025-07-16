@@ -36,7 +36,6 @@ struct ImageView: View {
                 state = latestGestureScale
             }
             .onEnded { finalGestureScale in
-                // Apply the final scale to the element's permanent scale
                 imageElement.scale *= finalGestureScale
             }
     }

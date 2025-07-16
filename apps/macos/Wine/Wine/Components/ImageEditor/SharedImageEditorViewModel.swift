@@ -35,7 +35,8 @@ import OSLog
     var cropRect: CGRect = .zero
     var croppedImage: NSImage?
     var canvasSize: CGSize = .zero
-    
+    private var hasPerformedInitialCentering = false
+    var centerImageTask: Task<Void, Never>?
 
     
     init(capture: Capture) {
@@ -43,7 +44,6 @@ import OSLog
         self.addImage(for: capture, at: canvasCenter)
         var image = editorOptions.elements.filter({$0 is ImageElement}).first
         image?.isSelected = true;
-        image?.position = canvasCenter;
     }
     
     func addImage(for capture: Capture, at position: CGPoint?) {
@@ -57,12 +57,59 @@ import OSLog
     }
     
     func removeImage(at offsets: IndexSet) {
-        editorOptions.elements.remove(atOffsets: offsets)
-        recalculateCanvasSize()
+        Task { @MainActor in
+            editorOptions.elements.remove(atOffsets: offsets)
+            recalculateCanvasSize()
+        }
     }
     
     func remove(forKey: UUID){
-        editorOptions.elements.removeAll { $0.id == forKey }
+        Task { @MainActor in
+            editorOptions.elements.removeAll { $0.id == forKey }
+        }
+    }
+    
+    func addElement(_ element: any CanvasElement) {
+        editorOptions.elements.append(element)
+        self.selectElement(element)
+    }
+    
+    func handleCanvasTap(at location: CGPoint) {
+        switch currentTool {
+            
+        case .select:
+            deselectAllElements()
+            
+        case .text:
+            let newText = TextAnnotation(text: "New Text", position: location)
+            addElement(newText)
+            currentTool = .select
+            
+        case .shape(let shapeType):
+            let newShape = ShapeElement(position: location, shapeType: shapeType, size: CGSize(width: 100, height: 100), color: .orange)
+            addElement(newShape)
+            currentTool = .select
+            
+        case .freehand:
+
+            break
+        }
+    }
+    
+    // Temporary work around, its a very bad solution to center the image
+    @MainActor
+    func performInitialCentering(in size: CGSize) {
+        guard !hasPerformedInitialCentering, size != .zero else { return }
+        if let index = editorOptions.elements.firstIndex(where: { $0.id == self.capture.id }) {
+            let isDirty = editorOptions.elements[index].isDirty
+            if isDirty {
+                hasPerformedInitialCentering = true
+                return;
+            }
+            
+            editorOptions.elements[index].position = NSPoint(x: size.width / 2, y: size.height / 2)
+            editorOptions.elements[index].isSelected = true            
+        }
     }
     
     

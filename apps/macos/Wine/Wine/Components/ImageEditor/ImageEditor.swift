@@ -25,7 +25,7 @@ struct ImageEditor: View {
     var body: some View {
         HSplitView {
             ControlsView(viewModel: viewModel)
-                .frame(minWidth: 280, idealWidth: 320, maxWidth: 400) // Removed maxHeight, let it be flexible
+                .frame(minWidth: 280, idealWidth: 320, maxWidth: 400)
 
 
             ZStack {
@@ -44,6 +44,7 @@ struct ImageEditor: View {
                             if !viewModel.isCropping {
                                 viewModel.cropRect = CGRect(origin: .zero, size: newSize)
                             }
+                            self.viewModel.performInitialCentering(in: geometry.size)
                         }
                         .onAppear {
                             viewModel.canvasSize = geometry.size

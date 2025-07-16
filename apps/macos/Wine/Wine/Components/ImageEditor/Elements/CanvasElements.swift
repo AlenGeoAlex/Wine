@@ -10,6 +10,7 @@ protocol CanvasElement: Identifiable, Hashable {
     var id: UUID { get }
     var position: CGPoint { get set }
     var isSelected: Bool { get set }
+    var isDirty: Bool { get set }
 }
 
 extension CanvasElement {

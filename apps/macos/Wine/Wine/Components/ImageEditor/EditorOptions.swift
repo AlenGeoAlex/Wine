@@ -23,9 +23,7 @@ import SwiftUI
     var backgroundImageBlurRadius: CGFloat = 0
     
     var imageCornerRadius: CGFloat = 12
-    var is3DEffect: Bool = false
-    var perspective3DDirection: Perspective3DDirection = .bottomRight
-    
+
     var elements: [any CanvasElement] = []
     
     func images() -> [ImageElement] {

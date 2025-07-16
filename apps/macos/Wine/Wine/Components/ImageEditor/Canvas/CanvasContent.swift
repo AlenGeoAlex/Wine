@@ -18,7 +18,8 @@ struct CanvasContent: View {
             CanvasBackgroundView(viewModel: viewModel)
 
             ForEach(viewModel.editorOptions.elements, id: \.id) { element in
-                CanvasElementView(element: element, isInteractive: isInteractive) {
+                CanvasElementView(element: element, viewModel: viewModel, isInteractive: isInteractive) {
+
                     selectElement(element)
                 }
                 .onDeleteCommand(perform: {
@@ -27,10 +28,10 @@ struct CanvasContent: View {
             }
             
             if let activeLine = viewModel.activeFreehandLine {
-                CanvasElementView(element: activeLine, isInteractive: false, onSelect: {})
+                CanvasElementView(element: activeLine,viewModel: viewModel, isInteractive: false, onSelect: {})
             }
-        }.onTapGesture {
-            deselectAllElements()
+        }.onTapGesture(coordinateSpace: .local) { location in
+            viewModel.handleCanvasTap(at: location)
         }
     }
     

@@ -76,11 +76,30 @@ enum Perspective3DDirection: String, CaseIterable, Identifiable {
         case .bottomRight: return "Bottom Right"
         }
     }
+    
+    var systemImageName: String {
+        switch self {
+        case .topLeft: return "arrow.up.left"
+        case .top: return "arrow.up"
+        case .topRight: return "arrow.up.right"
+        case .bottomLeft: return "arrow.down.left"
+        case .bottom: return "arrow.down"
+        case .bottomRight: return "arrow.down.right"
+        }
+    }
 }
 
-enum ShapeType : Hashable {
+enum ShapeType : Hashable, CaseIterable, Identifiable {
     case rectangle
     case ellipse
+    
+    var id: String {
+        switch self {
+        case .rectangle: return "rectangle"
+        case .ellipse: return "ellipse"
+        }
+    }
+    
 }
 
 enum DrawingTool: Equatable, Hashable {
@@ -102,6 +121,21 @@ enum DrawingTool: Equatable, Hashable {
             hasher.combine("freehand")
             hasher.combine(color.description)
             hasher.combine(lineWidth)
+        }
+    }
+    
+    static func == (lhs: DrawingTool, rhs: DrawingTool) -> Bool {
+        switch (lhs, rhs) {
+        case (.select, .select):
+            return true
+        case (.text, .text):
+            return true
+        case (.shape(let lhsType), .shape(let rhsType)):
+            return lhsType == rhsType
+        case (.freehand, .freehand):
+            return true
+        default:
+            return false
         }
     }
 }

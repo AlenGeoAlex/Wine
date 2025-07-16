@@ -25,7 +25,6 @@ struct ImageCanvasView: View {
                     .onAppear {
                         self.viewModel.canvasSize = geometry.size
                         self.viewModel.canvasCenter = CGPoint(x: geometry.size.width/2, y: geometry.size.height/2)
-                        print("Update canvas size \(geometry.size.width) x \(geometry.size.height)")
                         if viewModel.cropRect == .zero {
                             viewModel.cropRect = CGRect(origin: .zero, size: geometry.size)
                         }

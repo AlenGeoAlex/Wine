@@ -30,9 +30,6 @@ struct ControlsView: View {
                 Tab("OCR", systemImage: "text.bubble"){
                     OCRControl(sharedEditorOptions: viewModel)
                 }
-                Tab("3D", systemImage: "square.2.layers.3d.fill") {
-                    ThreeDimensionControl(sharedEditorOptions: viewModel)
-                }
                 Tab("Crop", systemImage: "crop") {
                     CropEditorControls(viewModel: viewModel)
                 }

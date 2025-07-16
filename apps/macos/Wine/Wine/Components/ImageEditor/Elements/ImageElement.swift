@@ -12,7 +12,8 @@ class ImageElement: CanvasElement {
     let id : UUID;
     var position: CGPoint
     var isSelected: Bool = false
-    
+    var isDirty: Bool = false
+
     let originalImage: NSImage
     var versions: [NSImage] = []
     var scale: CGFloat = 0.8
